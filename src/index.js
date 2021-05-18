@@ -92,6 +92,10 @@ class Game extends React.Component {
     }
   }
 
+  deselectSquare() {
+    this.setState({selectedSquare: null});
+  }
+
   handleClick(i) {
     if (this.state.puzzleIndex) {
       if (this.state.puzzleIndex.includes(i)) {
@@ -103,7 +107,11 @@ class Game extends React.Component {
 
   handleContextMenu(i, e) {
     e.preventDefault();
-
+    if (this.state.puzzleIndex) {
+      if (this.state.puzzleIndex.includes(i)) {
+        return;
+      }
+    }
     var squares = this.state.squares.slice();
     squares[i] = null;
     this.setState({squares: squares})
@@ -145,8 +153,17 @@ class Game extends React.Component {
 // ========================================
 
 const puzzle = [null,2,null,8,null,null,null,4,3,null,5,null,3,null,9,null,null,null,4,null,null,null,null,null,1,9,null,6,8,null,1,3,2,null,null,null,7,3,null,null,9,8,null,6,null,null,1,9,null,6,4,null,3,null,3,4,null,null,null,null,7,8,6,1,null,7,null,8,null,null,5,null,null,null,8,4,null,7,null,null,9]
+const myRef = React.createRef();
 
 ReactDOM.render(
-  <Game puzzle={puzzle}/>,
+  <Game puzzle={puzzle} ref={myRef}/>,
   document.getElementById('root')
 );
+
+const concernedElement = document.querySelector(".game-board");
+
+document.addEventListener("mousedown", (event) => {
+  if (!concernedElement.contains(event.target)) {
+    myRef.current.deselectSquare();
+  }
+});
