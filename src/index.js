@@ -13,18 +13,18 @@ function Square(props) {
 
 class Board extends React.Component {
   renderSquare(i) {
-    var style = {background: "white"};
+    var style = { background: "white" };
     if (this.props.selectedSquare === i) {
-      style = {background: "Yellow"}
+      style = { background: "Yellow" }
     } else if (this.props.puzzleIndex) {
-      style = (this.props.puzzleIndex.includes(i)) ? {background: "LightGray"} : style;
+      style = (this.props.puzzleIndex.includes(i)) ? { background: "LightGray" } : style;
     }
     return (
-      <Square 
-        value={this.props.squares[i]} 
+      <Square
+        value={this.props.squares[i]}
         selectedSquare={this.props.selectedSquare}
         style={style}
-        onClick={() => this.props.onClick(i)} 
+        onClick={() => this.props.onClick(i)}
         onContextMenu={(e) => this.props.onContextMenu(i, e)}
         onKeyPress={(num) => this.props.onKeyPress(num.key)}
       />
@@ -73,9 +73,10 @@ class Game extends React.Component {
 
     if (!this.props.puzzle) {
       this.state = {
-        squares: Array(81).fill(null), 
+        squares: Array(81).fill(null),
         selectedSquare: null,
         puzzleIndex: null,
+        win: false,
       }
     } else {
       var puzzleIndex = [];
@@ -85,15 +86,16 @@ class Game extends React.Component {
         }
       }
       this.state = {
-        squares: this.props.puzzle, 
-        selectedSquare: null, 
-        puzzleIndex: puzzleIndex, 
+        squares: this.props.puzzle,
+        selectedSquare: null,
+        puzzleIndex: puzzleIndex,
+        win: false,
       };
     }
   }
 
   deselectSquare() {
-    this.setState({selectedSquare: null});
+    this.setState({ selectedSquare: null });
   }
 
   handleClick(i) {
@@ -102,7 +104,7 @@ class Game extends React.Component {
         return;
       }
     }
-    this.setState({selectedSquare: i})
+    this.setState({ selectedSquare: i })
   }
 
   handleContextMenu(i, e) {
@@ -114,7 +116,42 @@ class Game extends React.Component {
     }
     var squares = this.state.squares.slice();
     squares[i] = null;
-    this.setState({squares: squares})
+    this.setState({ squares: squares })
+  }
+
+  checkWin(squares) {
+    var check = [];
+    for (let i = 0; i < 9; i++) {
+      check.push(squares.slice(i * 9, i * 9 + 9));
+    }
+    for (let i = 0; i < 9; i++) {
+      let array = []
+      for (let j = 0; j < 9; j++) {
+        array = array.concat(squares[j * 9 + i])
+      }
+      check.push(array);
+    }
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let array = []
+        for (let k = 0; k < 3; k++) {
+          for (let m = 0; m < 3; m++) {
+            const index = (i * 3 + k) * 9 + (j * 3 + m);
+            array = array.concat(squares[index]);
+          }
+        }
+        check.push(array);
+      }
+    }
+    for (const one of check) {
+      for (let i = 1; i <= 9; i++) {
+        if (!one.includes(i)) {
+          this.setState({ win: false });
+          return;
+        }
+      }
+    }
+    this.setState({ win: true });
   }
 
   handleKeyPress(num) {
@@ -122,41 +159,49 @@ class Game extends React.Component {
       return;
     }
     var squares = this.state.squares.slice();
-    squares[this.state.selectedSquare] = num;
-    this.setState({squares: squares});
+    squares[this.state.selectedSquare] = parseInt(num);
+    this.setState({ squares: squares });
+    if (!squares.includes(null)) {
+      this.checkWin(squares);
+    }
   }
 
   render() {
     const squares = this.state.squares.slice();
     const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
+    const winState = this.state.win ? "you win!!!" : "";
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board 
-            squares={squares} 
-            selectedSquare={this.state.selectedSquare}
-            puzzleIndex={puzzleIndex}
-            onClick={(i) => this.handleClick(i)} 
-            onContextMenu={(i, e) => this.handleContextMenu(i, e)}
-            onKeyPress={(num) => this.handleKeyPress(num)}
-          />
+      <div>
+        <div className="game">
+          <div className="game-board">
+            <Board
+              squares={squares}
+              selectedSquare={this.state.selectedSquare}
+              puzzleIndex={puzzleIndex}
+              onClick={(i) => this.handleClick(i)}
+              onContextMenu={(i, e) => this.handleContextMenu(i, e)}
+              onKeyPress={(num) => this.handleKeyPress(num)}
+            />
+          </div>
         </div>
+        <br></br>
         <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
+          <div>{winState}</div>
+          <ol>{}</ol>
         </div>
       </div>
+
     );
   }
 }
 
 // ========================================
 
-const puzzle = [null,2,null,8,null,null,null,4,3,null,5,null,3,null,9,null,null,null,4,null,null,null,null,null,1,9,null,6,8,null,1,3,2,null,null,null,7,3,null,null,9,8,null,6,null,null,1,9,null,6,4,null,3,null,3,4,null,null,null,null,7,8,6,1,null,7,null,8,null,null,5,null,null,null,8,4,null,7,null,null,9]
+const puzzle = [9,2,6,8,7,1,5,4,3,8,5,1,3,4,9,6,2,7,4,7,3,2,5,6,1,9,8,6,8,5,1,3,2,9,7,4,7,3,null,5,9,8,2,6,1,2,1,9,7,6,4,8,3,5,3,4,2,9,1,5,7,8,6,1,9,7,6,8,3,4,5,2,5,6,8,4,2,7,3,1,9]
 const myRef = React.createRef();
 
 ReactDOM.render(
-  <Game puzzle={puzzle} ref={myRef}/>,
+  <Game puzzle={puzzle} ref={myRef} />,
   document.getElementById('root')
 );
 
