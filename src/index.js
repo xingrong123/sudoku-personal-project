@@ -77,6 +77,12 @@ class Game extends React.Component {
         selectedSquare: null,
         puzzleIndex: null,
         win: false,
+        history: [{
+          square: null,
+          move: null,
+          previousState: null,
+        }],
+        move: 0, 
       }
     } else {
       var puzzleIndex = [];
@@ -90,6 +96,12 @@ class Game extends React.Component {
         selectedSquare: null,
         puzzleIndex: puzzleIndex,
         win: false,
+        history: [{
+          square: null,
+          move: null,
+          previousState: null,
+        }],
+        move: 0, 
       };
     }
   }
@@ -107,6 +119,12 @@ class Game extends React.Component {
     this.setState({ selectedSquare: i })
   }
 
+  getMoveDetails(squares, selectedIndex, move) {
+    const previousState = squares[selectedIndex];
+    const moveDetails = {square: selectedIndex, move: move, previousState: previousState};
+    return moveDetails;
+  }
+
   handleContextMenu(i, e) {
     e.preventDefault();
     if (this.state.puzzleIndex) {
@@ -115,8 +133,13 @@ class Game extends React.Component {
       }
     }
     var squares = this.state.squares.slice();
+    if (!squares[i]) {
+      return;
+    }
+    const moveDetails = this.getMoveDetails(squares, i, null)
     squares[i] = null;
-    this.setState({ squares: squares })
+    var history = this.state.history.slice(0, this.state.move + 1);
+    this.setState({ squares: squares, win: false, history: history.concat(moveDetails), move: this.state.move + 1 })
   }
 
   checkWin(squares) {
@@ -159,17 +182,30 @@ class Game extends React.Component {
       return;
     }
     var squares = this.state.squares.slice();
-    squares[this.state.selectedSquare] = parseInt(num);
-    this.setState({ squares: squares });
+    const move = parseInt(num);
+    const moveDetails = this.getMoveDetails(squares, this.state.selectedSquare, move);
+    squares[this.state.selectedSquare] = move;
+    var history = this.state.history.slice(0, this.state.move + 1);
+    this.setState({ squares: squares, history: history.concat(moveDetails), move: this.state.move + 1 });
     if (!squares.includes(null)) {
       this.checkWin(squares);
     }
+  }
+
+  undo() {
+    const history = this.state.history.slice();
+    const move = this.state.move;
+    const moveDetails = history[move]
+    var squares = this.state.squares.slice()
+    squares[moveDetails.square] = moveDetails.previousState;
+    this.setState({squares: squares, move: move - 1});
   }
 
   render() {
     const squares = this.state.squares.slice();
     const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
     const winState = this.state.win ? "you win!!!" : "";
+    const undoState = (this.state.move === 0)
     return (
       <div>
         <div className="game">
@@ -185,6 +221,9 @@ class Game extends React.Component {
           </div>
         </div>
         <br></br>
+        <button onClick={() => this.undo()} disabled={undoState}>undo</button>
+        <button>redo</button>
+        <br></br>
         <div className="game-info">
           <div>{winState}</div>
           <ol>{}</ol>
@@ -197,7 +236,7 @@ class Game extends React.Component {
 
 // ========================================
 
-const puzzle = [9,2,6,8,7,1,5,4,3,8,5,1,3,4,9,6,2,7,4,7,3,2,5,6,1,9,8,6,8,5,1,3,2,9,7,4,7,3,null,5,9,8,2,6,1,2,1,9,7,6,4,8,3,5,3,4,2,9,1,5,7,8,6,1,9,7,6,8,3,4,5,2,5,6,8,4,2,7,3,1,9]
+const puzzle = [9,2,6,8,7,1,5,4,3,8,5,1,3,4,9,6,2,7,4,7,3,2,5,6,1,9,8,6,8,null,1,3,2,9,7,4,7,3,null,5,9,8,2,6,1,2,null,9,7,6,4,8,3,5,3,4,2,9,1,5,7,8,6,1,9,7,6,8,3,4,5,2,5,6,8,4,2,7,3,1,9]
 const myRef = React.createRef();
 
 ReactDOM.render(
