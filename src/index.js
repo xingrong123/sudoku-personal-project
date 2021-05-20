@@ -71,39 +71,26 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
 
-    if (!this.props.puzzle) {
-      this.state = {
-        squares: Array(81).fill(null),
-        selectedSquare: null,
-        puzzleIndex: null,
-        win: false,
-        history: [{
-          square: null,
-          move: null,
-          previousState: null,
-        }],
-        move: 0, 
-      }
-    } else {
-      var puzzleIndex = [];
+    var puzzleIndex = [];
+    if (this.props.puzzle) {
       for (var i = 0; i < 81; i++) {
         if (this.props.puzzle[i]) {
           puzzleIndex = puzzleIndex.concat(i);
         }
       }
-      this.state = {
-        squares: this.props.puzzle,
-        selectedSquare: null,
-        puzzleIndex: puzzleIndex,
-        win: false,
-        history: [{
-          square: null,
-          move: null,
-          previousState: null,
-        }],
-        move: 0, 
-      };
     }
+    this.state = {
+      squares: this.props.puzzle ? this.props.puzzle : Array(81).fill(null),
+      selectedSquare: null,
+      puzzleIndex: this.props.puzzle ? puzzleIndex : null,
+      win: false,
+      history: [{
+        square: null,
+        move: null,
+        previousState: null,
+      }],
+      move: 0, 
+    };
   }
 
   deselectSquare() {
@@ -201,11 +188,21 @@ class Game extends React.Component {
     this.setState({squares: squares, move: move - 1});
   }
 
+  redo() {
+    const history = this.state.history.slice()
+    const move = this.state.move + 1;
+    const moveDetails = history[move];
+    var squares = this.state.squares.slice()
+    squares[moveDetails.square] = moveDetails.move;
+    this.setState({squares: squares, move: move})
+  }
+
   render() {
     const squares = this.state.squares.slice();
     const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
     const winState = this.state.win ? "you win!!!" : "";
-    const undoState = (this.state.move === 0)
+    const undoState = (this.state.move === 0);
+    const redoState = (this.state.move + 1 === this.state.history.length)
     return (
       <div>
         <div className="game">
@@ -222,7 +219,7 @@ class Game extends React.Component {
         </div>
         <br></br>
         <button onClick={() => this.undo()} disabled={undoState}>undo</button>
-        <button>redo</button>
+        <button onClick={() => this.redo()} disabled={redoState}>redo</button>
         <br></br>
         <div className="game-info">
           <div>{winState}</div>
