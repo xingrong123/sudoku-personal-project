@@ -186,6 +186,9 @@ class Game extends React.Component {
     var squares = this.state.squares.slice()
     squares[moveDetails.square] = moveDetails.previousState;
     this.setState({squares: squares, move: move - 1});
+    if (!squares.includes(null)) {
+      this.checkWin(squares);
+    }
   }
 
   redo() {
@@ -195,6 +198,9 @@ class Game extends React.Component {
     var squares = this.state.squares.slice()
     squares[moveDetails.square] = moveDetails.move;
     this.setState({squares: squares, move: move})
+    if (!squares.includes(null)) {
+      this.checkWin(squares);
+    }
   }
 
   render() {
