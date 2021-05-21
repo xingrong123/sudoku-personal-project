@@ -1,0 +1,15 @@
+.area {
+  float: left;
+  border: 1px solid black;
+  overflow: hidden;
+}
+
+.area-row {
+  overflow: hidden;
+}
+
+.board-row:after {
+  clear: both;
+  content: "";
+  display: table;
+}
