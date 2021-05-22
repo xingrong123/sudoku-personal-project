@@ -1,5 +1,7 @@
 import React from 'react';
+
 import Board from './Board'
+
 import "./Game.css";
 
 export default class Game extends React.Component {
@@ -35,6 +37,7 @@ export default class Game extends React.Component {
     handleClick(i) {
       if (this.state.puzzleIndex) {
         if (this.state.puzzleIndex.includes(i)) {
+          this.deselectSquare();
           return;
         }
       }
@@ -120,7 +123,7 @@ export default class Game extends React.Component {
       const moveDetails = history[move]
       var squares = this.state.squares.slice()
       squares[moveDetails.square] = moveDetails.previousState;
-      this.setState({squares: squares, move: move - 1});
+      this.setState({squares: squares, move: move - 1, win: false});
       if (!squares.includes(null)) {
         this.checkWin(squares);
       }
@@ -132,7 +135,7 @@ export default class Game extends React.Component {
       const moveDetails = history[move];
       var squares = this.state.squares.slice()
       squares[moveDetails.square] = moveDetails.move;
-      this.setState({squares: squares, move: move})
+      this.setState({squares: squares, move: move, win: false})
       if (!squares.includes(null)) {
         this.checkWin(squares);
       }
@@ -143,7 +146,7 @@ export default class Game extends React.Component {
       const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
       const winState = this.state.win ? "you win!!!" : "";
       const undoState = (this.state.move === 0);
-      const redoState = (this.state.move + 1 === this.state.history.length)
+      const redoState = (this.state.move + 1 === this.state.history.length);
       return (
         <div>
           <div className="game">
@@ -167,7 +170,6 @@ export default class Game extends React.Component {
             <ol>{}</ol>
           </div>
         </div>
-  
       );
     }
   }

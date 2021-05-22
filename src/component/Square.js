@@ -1,5 +1,4 @@
-
-import './Square.css'
+import './Square.css';
 
 export default function Square(props) {
   return (

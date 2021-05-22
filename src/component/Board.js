@@ -1,12 +1,14 @@
 import React from 'react';
-import Square from './Square'
-import './Board.css'
+
+import Square from './Square';
+
+import './Board.css';
 
 export default class Board extends React.Component {
   renderSquare(i) {
     var style = { background: "white" };
     if (this.props.selectedSquare === i) {
-      style = { background: "Yellow" }
+      style = { background: "Yellow" };
     } else if (this.props.puzzleIndex) {
       style = (this.props.puzzleIndex.includes(i)) ? { background: "LightGray" } : style;
     }
@@ -25,12 +27,12 @@ export default class Board extends React.Component {
   getBoard() {
     var board = [];
     for (var i = 0; i < 3; i++) {
-      var boardRow = []
+      var boardRow = [];
       for (var j = 0; j < 3; j++) {
         var area = this.getArea(i, j);
-        boardRow.push(<div className="area">{area}</div>)
+        boardRow.push(<div className="area">{area}</div>);
       }
-      board.push(<div className="board-row">{boardRow}</div>)
+      board.push(<div className="board-row">{boardRow}</div>);
     }
     return board;
   }
