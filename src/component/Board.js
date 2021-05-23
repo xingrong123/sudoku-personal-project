@@ -17,6 +17,7 @@ export default class Board extends React.Component {
         value={this.props.squares[i]}
         selectedSquare={this.props.selectedSquare}
         style={style}
+        key={i}
         onClick={() => this.props.onClick(i)}
         onContextMenu={(e) => this.props.onContextMenu(i, e)}
         onKeyPress={(num) => this.props.onKeyPress(num.key)}
