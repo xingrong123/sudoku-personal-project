@@ -11,8 +11,10 @@ for line in lines:
 print(ans)
 */
 
-
-DROP TABLE IF EXISTS sudoku_puzzles;
+DROP DATABASE IF EXISTS sudoku_db;
+CREATE DATABASE sudoku_db;
+\c sudoku_db;
+-- DROP TABLE IF EXISTS sudoku_puzzles;
 CREATE TABLE sudoku_puzzles (
   id SERIAL PRIMARY KEY,
   puzzle INTEGER[81] NOT NULL UNIQUE
