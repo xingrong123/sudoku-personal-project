@@ -1,5 +1,4 @@
-require('dotenv').config({ path: 'src/server/.env' });
-// require('dotenv').config();
+require('dotenv').config();
 const express = require("express")
 const cors = require("cors");
 const db = require("./db")
@@ -28,7 +27,7 @@ app.get("/", async (req, res) => {
   }
 })
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3002;
 app.listen(port, () => {
   console.log(`server is up and listening on ${port}`);
 });
