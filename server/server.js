@@ -13,7 +13,7 @@ app.use(cors());
 // })
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, '/../client/build')));
 
 // Middleware to reconize the incoming Request Object as a JSON Object.
 app.use(express.json());
