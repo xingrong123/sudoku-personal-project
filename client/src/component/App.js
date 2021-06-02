@@ -57,7 +57,7 @@ function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await SudokuPuzzleFinder.get("/");
+        const response = await SudokuPuzzleFinder.get("/api/puzzles");
         console.log(response.data.data)
         setPuzzles(response.data.data);
       } catch (err) {

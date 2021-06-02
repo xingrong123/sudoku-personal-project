@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 // Middleware to reconize the incoming Request Object as a JSON Object.
 app.use(express.json());
 
-app.get("/", async (req, res) => {
+app.get("/api/puzzles", async (req, res) => {
   try {
     const results = await db.query("SELECT * FROM sudoku_puzzles");
 
