@@ -7,8 +7,9 @@ import {
   Link,
 } from 'react-router-dom';
 
-import Game from './Game';
+import Game from './sudokugame/Game';
 import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
+
 import './App.css';
 
 var selectedPuzzle = null;
@@ -92,8 +93,9 @@ function Play() {
 
 document.addEventListener("mousedown", (event) => {
   var concernedElement = document.querySelector(".game-board");
-  if (concernedElement) {
-    if (!concernedElement.contains(event.target)) {
+  var concernedElement2 = document.querySelector(".game-controls")
+  if (concernedElement && concernedElement2) {
+    if (!concernedElement.contains(event.target) && !concernedElement2.contains(event.target)) {
       myRef.current.deselectSquare();
     }
   }

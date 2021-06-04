@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Board from './Board'
+import GameControls from './GameControls';
 
 import "./Game.css";
 
@@ -102,19 +103,26 @@ export default class Game extends React.Component {
     this.setState({ win: true });
   }
 
-  handleKeyPress(num) {
-    if (isNaN(num) || num < 1 || num > 9) {
+  numberHandler(move) {
+    var squares = this.state.squares.slice();
+    const moveDetails = this.getMoveDetails(squares, this.state.selectedSquare, move);
+    if (this.state.selectedSquare === null || squares[this.state.selectedSquare] === move) {
       return;
     }
-    var squares = this.state.squares.slice();
-    const move = parseInt(num);
-    const moveDetails = this.getMoveDetails(squares, this.state.selectedSquare, move);
     squares[this.state.selectedSquare] = move;
     var history = this.state.history.slice(0, this.state.move + 1);
     this.setState({ squares: squares, history: history.concat(moveDetails), move: this.state.move + 1 });
     if (!squares.includes(null)) {
       this.checkWin(squares);
     }
+  }
+
+  handleKeyPress(num) {
+    if (isNaN(num) || num < 1 || num > 9) {
+      return;
+    }
+    const move = parseInt(num);
+    this.numberHandler(move)
   }
 
   undo() {
@@ -141,6 +149,16 @@ export default class Game extends React.Component {
     }
   }
 
+  gameControlCLickHandler(value) {
+    if (value === "redo") {
+      this.redo();
+    } else if (value === "undo") {
+      this.undo();
+    } else if (!isNaN(value)) {
+      this.numberHandler(value)
+    }
+  }
+
   render() {
     const squares = this.state.squares.slice();
     const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
@@ -155,7 +173,7 @@ export default class Game extends React.Component {
       const text = `ROW ${moveDetails.square % 9 + 1} COL ${Math.floor(moveDetails.square / 9) + 1} changes from ${moveDetails.previousState} to ${moveDetails.move}`
       const moveColor = this.state.move === order ? "lightblue" : "";
       return (
-        <li style={{backgroundColor: moveColor}}>
+        <li style={{ backgroundColor: moveColor }}>
           {text}
         </li>
       );
@@ -173,10 +191,17 @@ export default class Game extends React.Component {
               onKeyPress={(num) => this.handleKeyPress(num)}
             />
           </div>
+          <br></br>
+
+
         </div>
         <br></br>
+        <div>
+          <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
+        </div>
+        {/* <br></br>
         <button onClick={() => this.undo()} disabled={undoState}>undo</button>
-        <button onClick={() => this.redo()} disabled={redoState}>redo</button>
+        <button onClick={() => this.redo()} disabled={redoState}>redo</button> */}
         <br></br>
         <div className="game-info">
           <div>{winState}</div>

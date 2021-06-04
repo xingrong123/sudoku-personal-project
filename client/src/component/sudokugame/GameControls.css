@@ -1,0 +1,20 @@
+.game-controls-row{
+    display:flex; 
+    flex-direction:row;
+}
+
+.game-controls-space{
+    display:flex; width: 34px;
+    flex-direction:row;
+}
+
+.game-control-button{
+    border-radius: 10px;
+    height: 68px;
+    width: 68px;
+    text-align: center;
+    float: left;
+    padding: 0;
+    line-height: 34px;
+    margin:10px
+}

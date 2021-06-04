@@ -37,7 +37,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname+'/../client/build/index.html'));
 });
 
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3003;
 app.listen(port, () => {
   console.log(`server is up and listening on ${port}`);
 });
