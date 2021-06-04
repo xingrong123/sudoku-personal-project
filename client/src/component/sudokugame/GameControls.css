@@ -10,6 +10,8 @@
 
 .game-control-button{
     border-radius: 10px;
+    font-size: 24px;
+    font-weight: bold;
     height: 68px;
     width: 68px;
     text-align: center;
@@ -17,4 +19,12 @@
     padding: 0;
     line-height: 34px;
     margin:10px
+}
+
+.game-control-button:hover {background-color: #a8e2aa}
+
+.game-control-button:active {
+  background-color: #8ec790;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
 }

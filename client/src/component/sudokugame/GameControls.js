@@ -6,12 +6,10 @@ export default function GameControls(props) {
 
   const generateGameButton = (i) => {
     return (
-      <div className="game-control-button">
-        <GameControlButton
-          value={i}
-          onClick={() => props.onClick(i)}
-        />
-      </div>
+      <GameControlButton
+        value={i}
+        onClick={() => props.onClick(i)}
+      />
     )
   }
 
@@ -34,20 +32,17 @@ export default function GameControls(props) {
           {generateGameButton(9)}
         </div>
         <div className="game-controls-row">
-          <div className="game-control-button">
-            <GameControlButton
-              value={"undo"}
-              onClick={() => props.onClick("undo")}
-              disabled={props.undoState}
-            />
-          </div>
-          <div className="game-control-button">
-            <GameControlButton
-              value={"redo"}
-              onClick={() => props.onClick("redo")}
-              disabled={props.redoState}
-            />
-          </div>
+          <GameControlButton
+            value={"undo"}
+            onClick={() => props.onClick("undo")}
+            disabled={props.undoState}
+          />
+          <GameControlButton
+            value={"redo"}
+            onClick={() => props.onClick("redo")}
+            disabled={props.redoState}
+          />
+
         </div>
       </div>
     </div>
@@ -57,7 +52,12 @@ export default function GameControls(props) {
 function GameControlButton(props) {
   return (
     <div>
-      <button onClick={props.onClick} disabled={props.disabled}>{props.value}</button>
+      <button
+        className="game-control-button"
+        onClick={props.onClick}
+        disabled={props.disabled}>
+        {props.value}
+      </button>
     </div>
   )
 }
