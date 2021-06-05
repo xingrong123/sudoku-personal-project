@@ -9,18 +9,22 @@ export default class Game extends React.Component {
   constructor(props) {
     super(props);
 
+    var puzzle = this.props.puzzle.slice();
+
     var puzzleIndex = [];
-    if (this.props.puzzle) {
+    if (puzzle) {
       for (var i = 0; i < 81; i++) {
-        if (this.props.puzzle[i]) {
+        if (puzzle[i]) {
           puzzleIndex = puzzleIndex.concat(i);
         }
       }
     }
+
     this.state = {
-      squares: this.props.puzzle ? this.props.puzzle : Array(81).fill(null),
+      id: this.props.id,
+      squares: puzzle,
       selectedSquare: null,
-      puzzleIndex: this.props.puzzle ? puzzleIndex : null,
+      puzzleIndex: puzzleIndex,
       win: false,
       history: [{
         square: null,
@@ -193,15 +197,11 @@ export default class Game extends React.Component {
           </div>
           <br></br>
 
-
         </div>
         <br></br>
         <div>
           <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
         </div>
-        {/* <br></br>
-        <button onClick={() => this.undo()} disabled={undoState}>undo</button>
-        <button onClick={() => this.redo()} disabled={redoState}>redo</button> */}
         <br></br>
         <div className="game-info">
           <div>{winState}</div>

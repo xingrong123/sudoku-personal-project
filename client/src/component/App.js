@@ -1,10 +1,12 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   useLocation,
   Switch,
   Route,
   Link,
+  useParams,
+  Redirect,
 } from 'react-router-dom';
 
 import Game from './sudokugame/Game';
@@ -12,7 +14,6 @@ import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
 
 import './App.css';
 
-var selectedPuzzle = null;
 const myRef = React.createRef();
 
 export default function App() {
@@ -32,64 +33,68 @@ function PathSwitch() {
     <div>
       <Switch location={background || location}>
         <Route exact path="/" children={<Home />} />
-        <Route path="/game" children={<Play />} />
+        <Route path="/game/:id" children={<Play />} />
+        <Route render={() => <Redirect to={{pathname: "/"}} />} />
       </Switch>
     </div>
   )
 }
 
-function selectPuzzle(puzzle) {
-  selectedPuzzle = puzzle;
-}
-
 function Home() {
 
-  const [puzzles, setPuzzles] = useState([]);
-  // puzzles = [{
-  //   id: something,
-  //   puzzle: something
-  // }]
-
+  const [puzzlesCount, setPuzzlesCount] = useState([]);
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await SudokuPuzzleFinder.get("/api/puzzles");
-        console.log(response.data.data)
-        setPuzzles(response.data.data);
+        const response = await SudokuPuzzleFinder.get("/api/puzzlescount");
+        setPuzzlesCount(response.data);
       } catch (err) {
-        console.log(err)
+        console.log(err);
       }
     }
     fetchData();
-  }, [])
+  }, []);
 
-  let links = [];
-  for (let i = 0; i < puzzles.length; i++) {
-    links.push(
-      <li>
-        <Link to="/game" onClick={() => selectPuzzle(puzzles[i].puzzle)}>puzzle {i}</Link>
-      </li>
-    );
-  }
   return (
     <div>
       <h1>Choose puzzle</h1>
       <ul>
-        {links}
+        {puzzlesCount.map(index => (
+          <li key={index.id}>
+            <Link to={`/game/${index.id}`}>puzzle {index.id}</Link>
+          </li>)
+        )}
       </ul>
     </div>
   );
 }
 
 function Play() {
-  const puzzle = selectedPuzzle ? selectedPuzzle : null;
+  const id = useParams().id;
+  const [puzzle, setPuzzle] = useState([]);
+  const [puzzleID, setPuzzleID] = useState("");
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        console.log(id, "effect")
+        const response = await SudokuPuzzleFinder.get(`/api/puzzle/${id}`);
+        console.log(response.data[0].puzzle, "effect");
+        setPuzzle(response.data[0].puzzle);
+        setPuzzleID(response.data[0].id);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    fetchData();
+  }, [id]);
+
   return (
     <div>
-      <Game puzzle={puzzle} ref={myRef} />
+      {puzzle.length === 81 ? <Game puzzle={puzzle} id={puzzleID} ref={myRef} /> : ""}
     </div>
   );
 }
-
 
 document.addEventListener("mousedown", (event) => {
   var concernedElement = document.querySelector(".game-board");
