@@ -16,10 +16,27 @@ CREATE DATABASE sudoku_db;
 \c sudoku_db;
 */
 DROP TABLE IF EXISTS sudoku_puzzles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS puzzle_progress;
+
+
 CREATE TABLE sudoku_puzzles (
   id SERIAL PRIMARY KEY,
   puzzle INTEGER[81] NOT NULL UNIQUE
 );
+
+CREATE TABLE users (
+  username VARCHAR(255) PRIMARY KEY,
+  password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE puzzle_progress (
+  username VARCHAR(255) REFERENCES users(username) NOT NULL,
+  puzzle_id INTEGER REFERENCES sudoku_puzzles(id) NOT NULL,
+  squares INTEGER[81] NOT NULL,
+  history JSON NOT NULL
+);
+
 INSERT INTO sudoku_puzzles(puzzle) VALUES 
   ('{9,null,null,null,null,null,null,null,1,null,null,7,8,3,1,6,4,9,6,1,null,5,4,null,8,null,null,null,null,null,1,null,null,null,null,6,7,4,5,null,9,6,2,null,null,null,null,6,null,null,4,7,5,null,3,7,null,4,null,null,9,null,2,4,null,null,null,6,null,null,8,5,5,null,1,null,null,8,null,null,null}'),
   ('{null,null,9,null,null,1,null,null,null,null,null,null,null,4,9,null,null,null,3,null,null,null,null,null,1,8,null,4,null,7,5,null,8,null,null,6,null,8,null,null,null,2,9,null,7,null,1,null,null,null,null,null,5,null,null,6,5,4,2,null,3,9,null,7,null,1,6,null,null,null,null,5,null,null,null,9,null,null,null,6,null}'),

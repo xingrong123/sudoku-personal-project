@@ -2,9 +2,10 @@ require('dotenv').config();
 const express = require("express")
 const path = require('path');
 const cors = require("cors");
-const db = require("./db");
-const app = express()
+// const db = require("./db");
+const app = express();
 
+// middleware for 
 app.use(cors());
 
 // app.use((req, res, next) => {
@@ -15,30 +16,12 @@ app.use(cors());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '/../client/build')));
 
-// Middleware to reconize the incoming Request Object as a JSON Object.
+// Middleware to recognize the incoming Request Object as a JSON Object.
 app.use(express.json());
 
-app.get("/api/puzzlescount", async (req, res) => {
-  try {
-    const results = await db.query("SELECT id FROM sudoku_puzzles");
-    res.json(results.rows);
-  } catch (err) {
-    console.log(err)
-  }
-})
+app.use("/auth", require("./routes/jwtAuth"));
 
-app.get("/api/puzzle/:id", async (req, res) => {
-  try {
-    const results = await db.query(
-      "SELECT * FROM sudoku_puzzles WHERE id = $1", [req.params.id]
-    );
-    if (results.rows[0]) {
-      res.json(results.rows);
-    }
-  } catch (error) {
-    console.log(error)
-  }
-})
+app.use("/api", require("./routes/sudokuApi"));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.

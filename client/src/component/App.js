@@ -79,9 +79,9 @@ function Play() {
       try {
         console.log(id, "effect")
         const response = await SudokuPuzzleFinder.get(`/api/puzzle/${id}`);
-        console.log(response.data[0].puzzle, "effect");
-        setPuzzle(response.data[0].puzzle);
-        setPuzzleID(response.data[0].id);
+        console.log(response.data.puzzle, "effect");
+        setPuzzle(response.data.puzzle);
+        setPuzzleID(response.data.id);
       } catch (err) {
         console.log(err);
       }
