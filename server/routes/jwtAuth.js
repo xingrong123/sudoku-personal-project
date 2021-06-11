@@ -17,7 +17,7 @@ router.post("/register", validInfo, async (req, res) => {
 
     if (user.rows.length !== 0) {
       // 401 unauthenticated status code
-      return res.status(401).send("user already exists");
+      return res.status(401).json("user already exists");
     }
 
     // Bcrypt the user password
@@ -55,7 +55,7 @@ router.post("/login", validInfo, async (req, res) => {
 
     if (user.rows.length === 0) {
       // 401 unauthenticated status code
-      return res.status(401).send("username or password is incorrect");
+      return res.status(401).json("username or password is incorrect");
     }
 
     // check if incoming password is the same as the database password
@@ -63,7 +63,7 @@ router.post("/login", validInfo, async (req, res) => {
     console.log(isValidPassword)
     if (!isValidPassword) {
       // 401 unauthenticated status code
-      return res.status(401).send("username or password is incorrect");
+      return res.status(401).json("username or password is incorrect");
     }
 
     // generate jwt token

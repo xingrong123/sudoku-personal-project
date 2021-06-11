@@ -3,6 +3,7 @@ import {
   useHistory,
   useParams
 } from "react-router-dom";
+import {toast} from "react-toastify";
 
 import AuthApi from '../apis/AuthApi';
 
@@ -36,9 +37,11 @@ export default function Modal(props) {
       localStorage.setItem("token", response.data.token)
       props.setAuth(true)
       props.setUsername(body.username)
+      toast.dark("login successfully!")
       history.goBack();
     } catch (err) {
-      console.error(err)
+      console.error(err.response.data)
+      toast.error(err.response.data)
     }
   }
 
@@ -47,6 +50,7 @@ export default function Modal(props) {
     props.setAuth(false);
     localStorage.removeItem("token");
     history.goBack();
+    toast.success("logout")
   }
 
   const form = id === "logout" ? (
@@ -88,7 +92,6 @@ export default function Modal(props) {
         <button className="btn btn-secondary my-3" onClick={back}>
           Close
         </button>
-
       </div>
     </div>
   );

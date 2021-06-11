@@ -8,6 +8,8 @@ import {
   useParams,
   Redirect,
 } from 'react-router-dom';
+import { ToastContainer } from "react-toastify";
+import {injectStyle} from "react-toastify/dist/inject-style"
 
 import { AppBar } from './AppBar';
 import Game from './sudokugame/Game';
@@ -18,6 +20,9 @@ import './App.css';
 import AuthApi from '../apis/AuthApi';
 
 const myRef = React.createRef();
+if (typeof window !== "undefined") {
+  injectStyle();
+}
 
 export default function App() {
 
@@ -54,6 +59,7 @@ export default function App() {
         <div className="top">
           <PathSwitch isAuthenticated={isAuthenticated} setAuth={setAuth} setUsername={setUsername} />
         </div>
+        <ToastContainer />
       </Router>
     </Fragment>
   );
