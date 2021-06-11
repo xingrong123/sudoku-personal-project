@@ -177,7 +177,7 @@ export default class Game extends React.Component {
       const text = `ROW ${moveDetails.square % 9 + 1} COL ${Math.floor(moveDetails.square / 9) + 1} changes from ${moveDetails.previousState} to ${moveDetails.move}`
       const moveColor = this.state.move === order ? "lightblue" : "";
       return (
-        <li style={{ backgroundColor: moveColor }}>
+        <li key={order} style={{ backgroundColor: moveColor }}>
           {text}
         </li>
       );

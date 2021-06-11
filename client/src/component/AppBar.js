@@ -6,9 +6,9 @@ export const AppBar = (props) => {
 
   return (
     <nav className="navbar fixed-top navbar-dark bg-dark">
-      <a class="navbar-brand m-2" href="/">Home</a>
-      {props.username}
-      <form class="form-inline">
+      <a className="navbar-brand m-2" href="/">Home</a>
+      <h1 className="navbar-brand m-2">{props.username}</h1>
+      <form className="form-inline">
         {!props.isAuthenticated ? (
           <Fragment>
             <Link to={{ pathname: "/auth/register", state: { background: location } }}>
