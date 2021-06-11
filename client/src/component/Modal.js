@@ -45,7 +45,7 @@ export default function Modal(props) {
   const logout = () => {
     props.setUsername("");
     props.setAuth(false);
-    localStorage.clear();
+    localStorage.removeItem("token");
     history.goBack();
   }
 
@@ -75,7 +75,7 @@ export default function Modal(props) {
         style={{
           position: "fixed",
           background: "white",
-          top: 25,
+          top: 90,
           left: "15%",
           right: "15%",
           padding: 15,

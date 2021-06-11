@@ -3,6 +3,7 @@ const db = require("../db");
 const bcrypt = require('bcrypt');
 const jwtGenerator = require('../utils/jwtGenerator');
 const validInfo = require('../middleware/validInfo');
+const authorize = require('../middleware/authorize');
 // registering
 
 router.post("/register", validInfo, async (req, res) => {
@@ -75,6 +76,19 @@ router.post("/login", validInfo, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error")
+  }
+});
+
+router.get("/is-verify", authorize, async (req, res) => {
+  try {
+    console.log(req.user)
+    res.json({
+      isAuthenticated: true,
+      username: req.user
+    })
+  } catch (err) {
+    console.error(err.message);
+    res.status(401).send("Server error")
   }
 });
 

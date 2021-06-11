@@ -15,6 +15,7 @@ import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
 import Modal from './Modal';
 
 import './App.css';
+import AuthApi from '../apis/AuthApi';
 
 const myRef = React.createRef();
 
@@ -26,6 +27,25 @@ export default function App() {
   const setAuth = (Boolean) => {
     setIsAuthenticated(Boolean);
   }
+
+  useEffect(() => {
+    try {
+      const authToken = async () => {
+        const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.token } })
+        console.log(response)
+        if (response.data.isAuthenticated) {
+          setIsAuthenticated(true);
+          setUsername(response.data.username)
+        } else {
+          setIsAuthenticated(false);
+          setUsername("")
+        }
+      }
+      authToken();
+    } catch (err) {
+      console.error(err.message)
+    }
+  }, [])
 
   return (
     <Fragment>
