@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Fragment} from 'react';
 
 import Square from './Square';
 
@@ -54,9 +54,9 @@ export default class Board extends React.Component {
   render() {
     const board = this.getBoard();
     return (
-      <div>
+      <Fragment>
         {board}
-      </div>
+      </Fragment>
     );
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   useLocation,
@@ -9,36 +9,54 @@ import {
   Redirect,
 } from 'react-router-dom';
 
+import { AppBar } from './AppBar';
 import Game from './sudokugame/Game';
 import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
+import Modal from './Modal';
 
 import './App.css';
 
 const myRef = React.createRef();
 
 export default function App() {
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+
+  const setAuth = (Boolean) => {
+    setIsAuthenticated(Boolean);
+  }
+
   return (
-    <div>
+    <Fragment>
       <Router>
-        <PathSwitch />
+        <AppBar isAuthenticated={isAuthenticated} setAuth={setAuth} username={username} />
+        <div className="top">
+          <PathSwitch isAuthenticated={isAuthenticated} setAuth={setAuth} setUsername={setUsername} />
+        </div>
       </Router>
-    </div>
+    </Fragment>
   );
 }
 
-function PathSwitch() {
+function PathSwitch(props) {
   let location = useLocation();
   let background = location.state && location.state.background;
   return (
-    <div>
+    <Fragment>
       <Switch location={background || location}>
-        <Route exact path="/" children={<Home />} />
-        <Route path="/game/:id" children={<Play />} />
-        <Route render={() => <Redirect to={{pathname: "/"}} />} />
+        <Route exact path="/" children={<Home isAuthenticated={props.isAuthenticated} />} />
+        <Route path="/game/:id" children={<Play isAuthenticated={props.isAuthenticated} />} />
+        <Route render={() => <Redirect to={{ pathname: "/" }} />} />
       </Switch>
-    </div>
+
+      {/* Show the modal when a background page is set */}
+      {background && <Route path="/auth/:id" children={<Modal setAuth={(i) => props.setAuth(i)} setUsername={(i) => props.setUsername(i)} />} />}
+    </Fragment>
   )
 }
+
+
 
 function Home() {
 
@@ -46,7 +64,7 @@ function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await SudokuPuzzleFinder.get("/api/puzzlescount");
+        const response = await SudokuPuzzleFinder.get("/puzzlescount");
         setPuzzlesCount(response.data);
       } catch (err) {
         console.log(err);
@@ -56,7 +74,7 @@ function Home() {
   }, []);
 
   return (
-    <div>
+    <Fragment>
       <h1>Choose puzzle</h1>
       <ul>
         {puzzlesCount.map(index => (
@@ -65,7 +83,7 @@ function Home() {
           </li>)
         )}
       </ul>
-    </div>
+    </Fragment>
   );
 }
 
@@ -78,7 +96,7 @@ function Play() {
     async function fetchData() {
       try {
         console.log(id, "effect")
-        const response = await SudokuPuzzleFinder.get(`/api/puzzle/${id}`);
+        const response = await SudokuPuzzleFinder.get(`/puzzle/${id}`);
         console.log(response.data.puzzle, "effect");
         setPuzzle(response.data.puzzle);
         setPuzzleID(response.data.id);
@@ -90,9 +108,9 @@ function Play() {
   }, [id]);
 
   return (
-    <div>
+    <Fragment>
       {puzzle.length === 81 ? <Game puzzle={puzzle} id={puzzleID} ref={myRef} /> : ""}
-    </div>
+    </Fragment>
   );
 }
 

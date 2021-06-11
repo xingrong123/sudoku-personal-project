@@ -51,13 +51,11 @@ export default function GameControls(props) {
 
 function GameControlButton(props) {
   return (
-    <div>
-      <button
-        className="game-control-button"
-        onClick={props.onClick}
-        disabled={props.disabled}>
-        {props.value}
-      </button>
-    </div>
+    <button
+      className="game-control-button"
+      onClick={props.onClick}
+      disabled={props.disabled}>
+      {props.value}
+    </button>
   )
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import Board from './Board'
 import GameControls from './GameControls';
@@ -183,7 +183,7 @@ export default class Game extends React.Component {
       );
     })
     return (
-      <div>
+      <Fragment>
         <div className="game">
           <div className="game-board">
             <Board
@@ -199,15 +199,13 @@ export default class Game extends React.Component {
 
         </div>
         <br></br>
-        <div>
-          <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
-        </div>
+        <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
         <br></br>
         <div className="game-info">
           <div>{winState}</div>
           <ol>{moveHistory}</ol>
         </div>
-      </div>
+      </Fragment>
     );
   }
 }
