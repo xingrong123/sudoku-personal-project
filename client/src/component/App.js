@@ -36,7 +36,7 @@ export default function App() {
   useEffect(() => {
     try {
       const authToken = async () => {
-        const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.token } })
+        const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } })
         console.log(response)
         if (response.data.isAuthenticated) {
           setIsAuthenticated(true);

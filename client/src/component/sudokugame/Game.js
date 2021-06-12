@@ -1,9 +1,12 @@
 import React, { Fragment } from 'react';
+import { toast } from "react-toastify";
 
 import Board from './Board'
 import GameControls from './GameControls';
 
 import "./Game.css";
+import AuthApi from '../../apis/AuthApi';
+import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -153,13 +156,101 @@ export default class Game extends React.Component {
     }
   }
 
+  async save() {
+    try {
+      const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
+      if (response.data.isAuthenticated) {
+        const username = response.data.username;
+        const puzzle_id = this.state.id;
+        const moves = this.state.move;
+        const squares = this.state.squares.slice();
+        const history = JSON.stringify(this.state.history.slice());
+        const body = {
+          username,
+          puzzle_id,
+          moves,
+          squares,
+          history
+        };
+        try {
+          const response2 = await SudokuPuzzleFinder.post("/save", body);
+          console.log(response2.data)
+          toast.success(response2.data)
+        } catch (error) {
+          console.error(error.response.data)
+          toast.error(error.response.data)
+        }
+
+      } else {
+        console.log(response.data)
+        toast.error(response.data)
+      }
+    } catch (err) {
+      console.error(err.response.data)
+      toast.error(err.response.data)
+    }
+  }
+
+  async load() {
+    try {
+      const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
+      if (response.data.isAuthenticated) {
+        const username = response.data.username;
+        const puzzle_id = this.state.id;
+        const body = {
+          username,
+          puzzle_id
+        };
+        try {
+          const response2 = await SudokuPuzzleFinder.post("/load", body);
+          const squares = response2.data[0].squares;
+          const moves = response2.data[0].moves;
+          const history = response2.data[0].history;
+          this.setState({history: history, squares: squares, move: moves})
+          console.log("load successfully")
+          toast.success("load successfully")
+        } catch (error) {
+          console.error(error.response.data)
+          toast.error(error.response.data)
+        }
+      } else {
+        console.log(response.data)
+        toast.error(response.data)
+      }
+    } catch (err) {
+      console.error(err.response.data)
+      toast.error(err.response.data)
+    }
+  }
+
   gameControlCLickHandler(value) {
-    if (value === "redo") {
-      this.redo();
-    } else if (value === "undo") {
-      this.undo();
-    } else if (!isNaN(value)) {
-      this.numberHandler(value)
+    switch (value) {
+      case "redo":
+        this.redo();
+        break;
+      case "undo":
+        this.undo();
+        break;
+      case "save":
+        this.save();
+        break;
+      case "load":
+        this.load();
+        break;
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+        this.numberHandler(value);
+        break;
+      default:
+        // not supposed to happen
+        console.error("button press unrecognized: " + value);
     }
   }
 
@@ -196,7 +287,6 @@ export default class Game extends React.Component {
             />
           </div>
           <br></br>
-
         </div>
         <br></br>
         <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />

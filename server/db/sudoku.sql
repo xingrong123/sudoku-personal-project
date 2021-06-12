@@ -15,9 +15,10 @@ DROP DATABASE IF EXISTS sudoku_db;
 CREATE DATABASE sudoku_db;
 \c sudoku_db;
 */
+DROP TABLE IF EXISTS puzzle_progress;
 DROP TABLE IF EXISTS sudoku_puzzles;
 DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS puzzle_progress;
+
 
 
 CREATE TABLE sudoku_puzzles (
@@ -31,10 +32,12 @@ CREATE TABLE users (
 );
 
 CREATE TABLE puzzle_progress (
-  username VARCHAR(255) REFERENCES users(username) NOT NULL,
-  puzzle_id INTEGER REFERENCES sudoku_puzzles(id) NOT NULL,
+  username VARCHAR(255) REFERENCES users(username),
+  puzzle_id INTEGER REFERENCES sudoku_puzzles(id),
+  moves INTEGER NOT NULL,
   squares INTEGER[81] NOT NULL,
-  history JSON NOT NULL
+  history JSON NOT NULL,
+  PRIMARY KEY(username, puzzle_id)
 );
 
 INSERT INTO sudoku_puzzles(puzzle) VALUES 

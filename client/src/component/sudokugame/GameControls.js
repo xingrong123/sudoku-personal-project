@@ -13,6 +13,8 @@ export default function GameControls(props) {
     )
   }
 
+  const isNotAuthenticated = localStorage.getItem("token") === null
+
   return (
     <div className="game-controls-space">
       <div className="game-controls">
@@ -42,7 +44,18 @@ export default function GameControls(props) {
             onClick={() => props.onClick("redo")}
             disabled={props.redoState}
           />
-
+        </div>
+        <div className="game-controls-row">
+          <GameControlButton
+            value={"save"}
+            onClick={() => props.onClick("save")}
+            disabled={isNotAuthenticated}
+          />
+          <GameControlButton
+            value={"load"}
+            onClick={() => props.onClick("load")}
+            disabled={isNotAuthenticated}
+          />
         </div>
       </div>
     </div>
