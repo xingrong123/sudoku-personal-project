@@ -3,7 +3,7 @@ const db = require("../db");
 
 router.get("/puzzlescount", async (req, res) => {
   try {
-    const results = await db.query("SELECT id FROM sudoku_puzzles");
+    const results = await db.query("SELECT id, difficulty FROM sudoku_puzzles");
     return res.json(results.rows);
   } catch (err) {
     console.error(err)

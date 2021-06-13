@@ -107,12 +107,28 @@ function Home() {
   return (
     <Fragment>
       <h1>Choose puzzle</h1>
+      <table className="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Difficulty</th>
+            <th scope="col">Play</th>
+          </tr>
+        </thead>
+        <tbody>
+          {puzzlesCount.map(
+            index => (
+              <tr className="table-light">
+                <td>{index.id}</td>
+                <td>{index.difficulty}</td>
+                <td><Link to={`/game/${index.id}`}><button className='btn btn-primary'>puzzle {index.id}</button></Link></td>
+              </tr>
+            )
+          )}
+        </tbody>
+      </table>
       <ul>
-        {puzzlesCount.map(index => (
-          <li key={index.id}>
-            <Link to={`/game/${index.id}`}>puzzle {index.id}</Link>
-          </li>)
-        )}
+
       </ul>
     </Fragment>
   );
