@@ -28,11 +28,12 @@ router.get("/puzzle/:id", async (req, res) => {
 router.post("/save", async (req, res) => {
   try {
     const { username, puzzle_id, moves, squares, history } = req.body;
+    // console.log(username, puzzle_id, moves, squares, history)
     const result = await db.query(
       "INSERT INTO puzzle_progress(username, puzzle_id, moves, squares, history) " + 
         "VALUES ($1, $2, $3, $4, $5) " + 
         "ON CONFLICT (username, puzzle_id) DO UPDATE SET moves = $3, squares = $4, history = $5",
-      [username, puzzle_id, moves, squares, history]
+      [username, puzzle_id, moves, squares, JSON.stringify(history)]
     );
     res.status(200).json("saved successfully");
   } catch (err) {

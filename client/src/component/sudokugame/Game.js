@@ -164,7 +164,7 @@ export default class Game extends React.Component {
         const puzzle_id = this.state.id;
         const moves = this.state.move;
         const squares = this.state.squares.slice();
-        const history = JSON.stringify(this.state.history.slice());
+        const history = this.state.history.slice();
         const body = {
           username,
           puzzle_id,
@@ -174,7 +174,6 @@ export default class Game extends React.Component {
         };
         try {
           const response2 = await SudokuPuzzleFinder.post("/save", body);
-          console.log(response2.data)
           toast.success(response2.data)
         } catch (error) {
           console.error(error.response.data)
@@ -196,7 +195,7 @@ export default class Game extends React.Component {
       const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
       if (response.data.isAuthenticated) {
         const username = response.data.username;
-        const puzzle_id = this.state.id;
+        const puzzle_id = isNaN(this.state.id) ? parseInt(this.state.id) : this.state.id;
         const body = {
           username,
           puzzle_id

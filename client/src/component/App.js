@@ -121,9 +121,7 @@ function Play() {
   useEffect(() => {
     async function fetchData() {
       try {
-        console.log(id, "effect")
         const response = await SudokuPuzzleFinder.get(`/puzzle/${id}`);
-        console.log(response.data.puzzle, "effect");
         setPuzzle(response.data.puzzle);
         setPuzzleID(response.data.id);
       } catch (err) {
@@ -135,7 +133,7 @@ function Play() {
 
   return (
     <Fragment>
-      {puzzle.length === 81 ? <Game puzzle={puzzle} id={puzzleID} ref={myRef} /> : ""}
+      {puzzle.length === 81 && puzzleID !== "" ? <Game puzzle={puzzle} id={puzzleID} ref={myRef} /> : ""}
     </Fragment>
   );
 }
