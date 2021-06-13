@@ -9,14 +9,13 @@ import {
   Redirect,
 } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
-import {injectStyle} from "react-toastify/dist/inject-style"
+import { injectStyle } from "react-toastify/dist/inject-style"
 
 import { AppBar } from './AppBar';
 import Game from './sudokugame/Game';
 import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
 import Modal from './Modal';
 
-import './App.css';
 import AuthApi from '../apis/AuthApi';
 
 const myRef = React.createRef();
@@ -53,26 +52,32 @@ export default function App() {
   }, [])
 
   return (
-    <Fragment>
-      <Router>
+    <Router>
+      <header className="navbar navbar-expand-md navbar-dark bd-navbar bg-dark">
         <AppBar isAuthenticated={isAuthenticated} setAuth={setAuth} username={username} />
-        <div className="top">
-          <PathSwitch isAuthenticated={isAuthenticated} setAuth={setAuth} setUsername={setUsername} />
+      </header>
+      <main>
+        <div className="bd-masthead mb-3">
+          <div className="container px-4 px-md-3">
+            <div className="row align-items-lg-center">
+              <MainContent isAuthenticated={isAuthenticated} setAuth={setAuth} setUsername={setUsername} />
+            </div>
+          </div>
         </div>
         <ToastContainer />
-      </Router>
-    </Fragment>
+      </main>
+    </Router>
   );
 }
 
-function PathSwitch(props) {
+function MainContent(props) {
   let location = useLocation();
   let background = location.state && location.state.background;
   return (
     <Fragment>
       <Switch location={background || location}>
         <Route exact path="/" children={<Home isAuthenticated={props.isAuthenticated} />} />
-        <Route path="/game/:id" children={<Play isAuthenticated={props.isAuthenticated} />} />
+        <Route path="/game/:id" children={<Sudoku isAuthenticated={props.isAuthenticated} />} />
         <Route render={() => <Redirect to={{ pathname: "/" }} />} />
       </Switch>
 
@@ -113,7 +118,7 @@ function Home() {
   );
 }
 
-function Play() {
+function Sudoku() {
   const id = useParams().id;
   const [puzzle, setPuzzle] = useState([]);
   const [puzzleID, setPuzzleID] = useState("");
