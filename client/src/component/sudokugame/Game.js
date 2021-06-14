@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { toast } from "react-toastify";
 
 import Board from './Board'
@@ -25,6 +25,7 @@ export default class Game extends React.Component {
 
     this.state = {
       id: this.props.id,
+      difficulty: this.props.difficulty,
       squares: puzzle,
       selectedSquare: null,
       puzzleIndex: puzzleIndex,
@@ -205,7 +206,7 @@ export default class Game extends React.Component {
           const squares = response2.data[0].squares;
           const moves = response2.data[0].moves;
           const history = response2.data[0].history;
-          this.setState({history: history, squares: squares, move: moves})
+          this.setState({ history: history, squares: squares, move: moves })
           console.log("load successfully")
           toast.success("load successfully")
         } catch (error) {
@@ -267,34 +268,41 @@ export default class Game extends React.Component {
       const text = `ROW ${moveDetails.square % 9 + 1} COL ${Math.floor(moveDetails.square / 9) + 1} changes from ${moveDetails.previousState} to ${moveDetails.move}`
       const moveColor = this.state.move === order ? "lightblue" : "";
       return (
-        <li key={order} style={{ backgroundColor: moveColor }}>
+        <li key={order} class="list-group-item" style={{ backgroundColor: moveColor }}>
           {text}
         </li>
       );
     })
     return (
-      <Fragment>
-        <div className="game">
-          <div className="game-board">
-            <Board
-              squares={squares}
-              selectedSquare={this.state.selectedSquare}
-              puzzleIndex={puzzleIndex}
-              onClick={(i) => this.handleClick(i)}
-              onContextMenu={(i, e) => this.handleContextMenu(i, e)}
-              onKeyPress={(num) => this.handleKeyPress(num)}
-            />
+      <div className="text-center">
+        <div className="container">
+          <div className="d-lg-flex justify-content-center">
+            <div className="d-md-flex align-items-center text-center ">
+              <div className="game m-4">
+                <div className="game-board">
+                  <h1>Puzzle #{this.state.id}</h1>
+                  <p>Difficulty: {this.state.difficulty}</p>
+                  <Board
+                    squares={squares}
+                    selectedSquare={this.state.selectedSquare}
+                    puzzleIndex={puzzleIndex}
+                    onClick={(i) => this.handleClick(i)}
+                    onContextMenu={(i, e) => this.handleContextMenu(i, e)}
+                    onKeyPress={(num) => this.handleKeyPress(num)}
+                  />
+                </div>
+                <br></br>
+              </div>
+              <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
+            </div>
+            <div className="game-info m-4">
+              <div>{winState}</div>
+              <h1>History</h1>
+              <ol class="list-group list-group-numbered">{moveHistory}</ol>
+            </div>
           </div>
-          <br></br>
         </div>
-        <br></br>
-        <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
-        <br></br>
-        <div className="game-info">
-          <div>{winState}</div>
-          <ol>{moveHistory}</ol>
-        </div>
-      </Fragment>
+      </div>
     );
   }
 }

@@ -33,7 +33,7 @@ export default class Board extends React.Component {
         var area = this.getArea(i, j);
         boardRow.push(<div className="area">{area}</div>);
       }
-      board.push(<div className="board-row">{boardRow}</div>);
+      board.push(<div className="board-row d-flex justify-content-center">{boardRow}</div>);
     }
     return board;
   }
@@ -46,7 +46,7 @@ export default class Board extends React.Component {
         const index = (i * 3 + k) * 9 + (j * 3 + m);
         areaRow.push(this.renderSquare(index));
       }
-      area.push(<div className="area-row">{areaRow}</div>);
+      area.push(<div className="area-row d-flex">{areaRow}</div>);
     }
     return area;
   }

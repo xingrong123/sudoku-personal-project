@@ -4,10 +4,6 @@
   overflow: hidden;
 }
 
-.area-row {
-  overflow: hidden;
-}
-
 .board-row:after {
   clear: both;
   content: "";
