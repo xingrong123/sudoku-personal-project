@@ -7,6 +7,7 @@ import GameControls from './GameControls';
 import "./Game.css";
 import AuthApi from '../../apis/AuthApi';
 import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
+import { Timer } from './Timer';
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -24,8 +25,6 @@ export default class Game extends React.Component {
     }
 
     this.state = {
-      id: this.props.id,
-      difficulty: this.props.difficulty,
       squares: puzzle,
       selectedSquare: null,
       puzzleIndex: puzzleIndex,
@@ -109,6 +108,7 @@ export default class Game extends React.Component {
       }
     }
     this.setState({ win: true });
+    //need to stop timer
   }
 
   numberHandler(move) {
@@ -162,7 +162,7 @@ export default class Game extends React.Component {
       const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
       if (response.data.isAuthenticated) {
         const username = response.data.username;
-        const puzzle_id = this.state.id;
+        const puzzle_id = this.props.id;
         const moves = this.state.move;
         const squares = this.state.squares.slice();
         const history = this.state.history.slice();
@@ -196,7 +196,7 @@ export default class Game extends React.Component {
       const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
       if (response.data.isAuthenticated) {
         const username = response.data.username;
-        const puzzle_id = isNaN(this.state.id) ? parseInt(this.state.id) : this.state.id;
+        const puzzle_id = isNaN(this.props.id) ? parseInt(this.props.id) : this.props.id;
         const body = {
           username,
           puzzle_id
@@ -273,6 +273,7 @@ export default class Game extends React.Component {
         </li>
       );
     })
+    const time = this.state.timer;
     return (
       <div className="text-center">
         <div className="container">
@@ -280,8 +281,8 @@ export default class Game extends React.Component {
             <div className="d-md-flex align-items-center text-center ">
               <div className="game m-4">
                 <div className="game-board">
-                  <h1>Puzzle #{this.state.id}</h1>
-                  <p>Difficulty: {this.state.difficulty}</p>
+                  <h1>Puzzle #{this.props.id}</h1>
+                  <p>Difficulty: {this.props.difficulty}</p>
                   <Board
                     squares={squares}
                     selectedSquare={this.state.selectedSquare}
@@ -298,6 +299,7 @@ export default class Game extends React.Component {
             <div className="game-info m-4">
               <div>{winState}</div>
               <h1>History</h1>
+              <Timer />
               <ol class="list-group list-group-numbered">{moveHistory}</ol>
             </div>
           </div>
