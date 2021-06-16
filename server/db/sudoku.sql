@@ -15,9 +15,12 @@ DROP DATABASE IF EXISTS sudoku_db;
 CREATE DATABASE sudoku_db;
 \c sudoku_db;
 */
+
+DROP TABLE IF EXISTS puzzle_win;
 DROP TABLE IF EXISTS puzzle_progress;
 DROP TABLE IF EXISTS sudoku_puzzles;
 DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS DIFFICULTY_LEVEL;
 
 CREATE TYPE DIFFICULTY_LEVEL AS ENUM (
   'easy',
@@ -43,7 +46,14 @@ CREATE TABLE puzzle_progress (
   moves INTEGER NOT NULL,
   squares INTEGER[81] NOT NULL,
   history JSON NOT NULL,
+  time_spent TIME WITHOUT TIME ZONE NOT NULL,
   PRIMARY KEY(username, puzzle_id)
+);
+
+CREATE TABLE puzzle_win (
+  username VARCHAR(255) REFERENCES users(username),
+  puzzle_id INTEGER REFERENCES sudoku_puzzles(id),
+  time_spent TIME WITHOUT TIME ZONE NOT NULL
 );
 
 INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES 

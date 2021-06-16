@@ -35,7 +35,19 @@ export default class Game extends React.Component {
         previousState: null,
       }],
       move: 0,
+      startTime: {
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+      },
+      time: {
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+      }
     };
+
+    this.setTime = this.setTime.bind(this)
   }
 
   deselectSquare() {
@@ -157,6 +169,19 @@ export default class Game extends React.Component {
     }
   }
 
+  // taken from https://stackoverflow.com/questions/42488048/how-can-i-sum-properties-from-two-objects
+  // function below takes as many objects and sums them by key using reduce
+  getTimeString(startTime, timeSpent) {
+    var time = new Date()
+    time.setHours(startTime.hours + timeSpent.hours)
+    time.setMinutes(startTime.minutes + timeSpent.minutes)
+    time.setSeconds(startTime.seconds + timeSpent.seconds)
+    const pad = (n) => {
+      return n<10 ? '0'+n : n;
+    }
+    return pad(time.getHours()) + ":" + pad(time.getMinutes()) + ":" +  pad(time.getSeconds())
+  }
+
   async save() {
     try {
       const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
@@ -166,12 +191,14 @@ export default class Game extends React.Component {
         const moves = this.state.move;
         const squares = this.state.squares.slice();
         const history = this.state.history.slice();
+        const time_spent = this.getTimeString(this.state.startTime, this.state.time);
         const body = {
           username,
           puzzle_id,
           moves,
           squares,
-          history
+          history,
+          time_spent
         };
         try {
           const response2 = await SudokuPuzzleFinder.post("/save", body);
@@ -191,6 +218,16 @@ export default class Game extends React.Component {
     }
   }
 
+  getTimeJson(time) {
+    // time input has to be in the format "hh:mm:ss" 
+    const timeArray = time.split(":");
+    return ({
+      hours: parseInt(timeArray[0]),
+      minutes: parseInt(timeArray[1]),
+      seconds: parseInt(timeArray[2])
+    })
+  }
+
   async load() {
     try {
       const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
@@ -206,7 +243,8 @@ export default class Game extends React.Component {
           const squares = response2.data[0].squares;
           const moves = response2.data[0].moves;
           const history = response2.data[0].history;
-          this.setState({ history: history, squares: squares, move: moves })
+          const startTime = this.getTimeJson(response2.data[0].time_spent);
+          this.setState({ history: history, squares: squares, move: moves, startTime: startTime })
           console.log("load successfully")
           toast.success("load successfully")
         } catch (error) {
@@ -254,6 +292,15 @@ export default class Game extends React.Component {
     }
   }
 
+  setTime(hrs, mins, secs) {
+    const time = {
+      hours: hrs,
+      minutes: mins,
+      seconds: secs
+    };
+    this.setState({ time: time });
+  }
+
   render() {
     const squares = this.state.squares.slice();
     const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
@@ -273,7 +320,6 @@ export default class Game extends React.Component {
         </li>
       );
     })
-    const time = this.state.timer;
     return (
       <div className="text-center">
         <div className="container">
@@ -299,8 +345,13 @@ export default class Game extends React.Component {
             <div className="game-info m-4">
               <div>{winState}</div>
               <h1>History</h1>
-              <Timer />
-              <ol class="list-group list-group-numbered">{moveHistory}</ol>
+              <Timer
+                winState={this.state.win}
+                time={this.state.time}
+                setTime={this.setTime}
+                startTime={this.state.startTime}
+              />
+              <ol className="list-group list-group-numbered">{moveHistory}</ol>
             </div>
           </div>
         </div>

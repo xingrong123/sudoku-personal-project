@@ -27,13 +27,13 @@ router.get("/puzzle/:id", async (req, res) => {
 
 router.post("/save", async (req, res) => {
   try {
-    const { username, puzzle_id, moves, squares, history } = req.body;
+    const { username, puzzle_id, moves, squares, history, time_spent } = req.body;
     // console.log(username, puzzle_id, moves, squares, history)
     const result = await db.query(
-      "INSERT INTO puzzle_progress(username, puzzle_id, moves, squares, history) " + 
-        "VALUES ($1, $2, $3, $4, $5) " + 
+      "INSERT INTO puzzle_progress(username, puzzle_id, moves, squares, history, time_spent) " + 
+        "VALUES ($1, $2, $3, $4, $5, $6) " + 
         "ON CONFLICT (username, puzzle_id) DO UPDATE SET moves = $3, squares = $4, history = $5",
-      [username, puzzle_id, moves, squares, JSON.stringify(history)]
+      [username, puzzle_id, moves, squares, JSON.stringify(history), time_spent]
     );
     res.status(200).json("saved successfully");
   } catch (err) {
@@ -45,7 +45,7 @@ router.post("/load", async (req, res) => {
   try {
     const {username, puzzle_id} = req.body;
     const results = await db.query(
-      "SELECT moves, squares, history FROM puzzle_progress WHERE username = $1 and puzzle_id = $2", [username, puzzle_id]
+      "SELECT moves, squares, history, time_spent FROM puzzle_progress WHERE username = $1 and puzzle_id = $2", [username, puzzle_id]
     );
     res.status(200).json(results.rows);
   } catch (error) {

@@ -6,20 +6,31 @@ export const Timer = (props) => {
     seconds,
     minutes,
     hours,
-    isRunning,
     pause,
     reset,
   } = useStopwatch({ autoStart: true });
 
+  const setTime = props.setTime;
+
   useEffect(() => {
-    if (props.win) {
+    setTime(hours, minutes, seconds)
+  }, [hours, minutes, seconds, setTime])
+
+  useEffect(() => {
+    if (props.winState === true) {
       pause();
     }
-  }, [props.win, pause])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.winState])
+
+  useEffect(() => {
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.startTime])
 
   return (
     <div style={{ fontSize: '90px' }}>
-      <span>{hours}</span>:<span>{minutes}</span>:<span>{seconds}</span>
+      <span>{props.startTime.hours + hours}</span>:<span>{props.startTime.minutes + minutes}</span>:<span>{props.startTime.seconds + seconds}</span>
     </div>
   );
 }

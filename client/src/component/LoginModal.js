@@ -38,31 +38,31 @@ export default function LoginModal(props) {
 
 
   return (
-    <div class="modal fade" id="loginModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Login</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div className="modal fade" id="loginModal" >
+      <div className="modal-dialog">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title" id="exampleModalLabel">Login</h5>
+            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <form onSubmit={onSubmitForm}>
-            <div class="modal-body">
-              <div class="mb-3 row">
-                <label for="username" class="col-sm-2 col-form-label">Username</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" name="username" onChange={e => onChange(e)} value={username} />
+            <div className="modal-body">
+              <div className="mb-3 row">
+                <label className="col-sm-2 col-form-label">Username</label>
+                <div className="col-sm-10">
+                  <input type="text" className="form-control" name="username" onChange={e => onChange(e)} value={username} />
                 </div>
               </div>
-              <div class="mb-3 row">
-                <label for="inputPassword" class="col-sm-2 col-form-label" >Password</label>
-                <div class="col-sm-10">
-                  <input type="password" class="form-control" name="password" onChange={e => onChange(e)} value={password} />
+              <div className="mb-3 row">
+                <label className="col-sm-2 col-form-label" >Password</label>
+                <div className="col-sm-10">
+                  <input type="password" className="form-control" name="password" onChange={e => onChange(e)} value={password} />
                 </div>
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" id="closeLogin" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary">Login</button>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" id="closeLogin" data-bs-dismiss="modal">Close</button>
+              <button type="submit" className="btn btn-primary">Login</button>
             </div>
           </form>
 
