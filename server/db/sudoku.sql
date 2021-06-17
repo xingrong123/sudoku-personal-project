@@ -30,7 +30,7 @@ CREATE TYPE DIFFICULTY_LEVEL AS ENUM (
 );
 
 CREATE TABLE sudoku_puzzles (
-  id SERIAL PRIMARY KEY,
+  puzzle_id SERIAL PRIMARY KEY,
   puzzle INTEGER[81] NOT NULL UNIQUE,
   difficulty DIFFICULTY_LEVEL NOT NULL
 );
@@ -42,7 +42,7 @@ CREATE TABLE users (
 
 CREATE TABLE puzzle_progress (
   username VARCHAR(255) REFERENCES users(username),
-  puzzle_id INTEGER REFERENCES sudoku_puzzles(id),
+  puzzle_id INTEGER REFERENCES sudoku_puzzles(puzzle_id),
   moves INTEGER NOT NULL,
   squares INTEGER[81] NOT NULL,
   history JSON NOT NULL,
@@ -52,8 +52,9 @@ CREATE TABLE puzzle_progress (
 
 CREATE TABLE puzzle_win (
   username VARCHAR(255) REFERENCES users(username),
-  puzzle_id INTEGER REFERENCES sudoku_puzzles(id),
-  time_spent TIME WITHOUT TIME ZONE NOT NULL
+  puzzle_id INTEGER REFERENCES sudoku_puzzles(puzzle_id),
+  time_spent TIME WITHOUT TIME ZONE NOT NULL,
+  PRIMARY KEY (username, puzzle_id)
 );
 
 INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES 
