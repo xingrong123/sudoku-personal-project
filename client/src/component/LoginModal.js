@@ -30,6 +30,7 @@ export default function LoginModal(props) {
         password: ""
       })
       document.getElementById("closeLogin").click();
+      window.location.reload(); 
     } catch (err) {
       console.error(err.response.data)
       toast.error(err.response.data)
@@ -56,7 +57,7 @@ export default function LoginModal(props) {
               <div className="mb-3 row">
                 <label className="col-sm-2 col-form-label" >Password</label>
                 <div className="col-sm-10">
-                  <input type="password" className="form-control" name="password" onChange={e => onChange(e)} value={password} />
+                  <input type="password" className="form-control" name="password" autoComplete="on" onChange={e => onChange(e)} value={password} />
                 </div>
               </div>
             </div>

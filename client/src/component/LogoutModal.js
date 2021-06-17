@@ -7,6 +7,7 @@ export default function LogoutModal(props) {
     props.setUsername("");
     props.setAuth(false);
     localStorage.removeItem("token");
+    window.location.reload();
     toast.dark("Logout!")
   }
 

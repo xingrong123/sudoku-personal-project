@@ -10,6 +10,36 @@ router.get("/puzzlescount", async (req, res) => {
   }
 })
 
+router.post("/puzzlescount", async (req, res) => {
+  try {
+    const { username } = req.body;
+    console.log(username)
+    const results = db.query("SELECT puzzle_id, difficulty FROM sudoku_puzzles");
+    const results2 = db.query(`
+      SELECT puzzle_id, time_spent, 0 AS completed
+        FROM puzzle_progress AS pp1
+        WHERE username=$1
+          AND NOT EXISTS (
+            SELECT puzzle_id
+              FROM puzzle_win
+              WHERE username=pp1.username
+                AND puzzle_id=pp1.puzzle_id
+          )
+      UNION
+      SELECT puzzle_id, time_spent, 1 AS completed
+        FROM puzzle_win
+        WHERE username=$1`,
+      [username]);
+    const totalResults = await Promise.all([results, results2])
+    return res.json({
+      puzzles: totalResults[0].rows,
+      wins: totalResults[1].rows
+    })
+  } catch (err) {
+    console.error(err)
+  }
+})
+
 router.get("/puzzle/:id", async (req, res) => {
   try {
     const { id } = req.params;

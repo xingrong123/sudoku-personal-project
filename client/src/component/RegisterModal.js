@@ -31,6 +31,7 @@ export default function RegisterModal(props) {
         password: ""
       })
       document.getElementById("closeRegister").click();
+      window.location.reload(); 
     } catch (err) {
       console.error(err.response.data)
       toast.error(err.response.data)
@@ -57,7 +58,7 @@ export default function RegisterModal(props) {
               <div className="mb-3 row">
                 <label className="col-sm-2 col-form-label" >Password</label>
                 <div className="col-sm-10">
-                  <input type="password" className="form-control" name="password" id="inputPassword" onChange={e => onChange(e)} value={password} />
+                  <input type="password" className="form-control" name="password" id="inputPassword" autoComplete="on" onChange={e => onChange(e)} value={password} />
                 </div>
               </div>
             </div>

@@ -39,7 +39,13 @@ export default function App() {
           setUsername("")
         }
       }
-      authToken();
+      if (localStorage.getItem("token") !== null) {
+        authToken();
+      } else {
+        setIsAuthenticated(false);
+        setUsername("")
+      }
+      
     } catch (err) {
       console.error(err.message)
     }
