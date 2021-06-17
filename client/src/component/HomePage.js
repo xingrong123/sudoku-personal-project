@@ -46,10 +46,10 @@ export default function HomePage() {
           <tbody>
             {puzzlesCount.map(
               index => (
-                <tr className="table-light" key={index.id}>
-                  <td>{index.id}</td>
+                <tr className="table-light" key={index.puzzle_id}>
+                  <td>{index.puzzle_id}</td>
                   <td>{difficultyStyle(index.difficulty)}</td>
-                  <td><Link to={`/game/${index.id}`}><button className='btn btn-secondary'>puzzle {index.id}</button></Link></td>
+                  <td><Link to={`/game/${index.puzzle_id}`}><button className='btn btn-secondary'>puzzle {index.puzzle_id}</button></Link></td>
                 </tr>
               )
             )}

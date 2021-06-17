@@ -3,7 +3,7 @@ const db = require("../db");
 
 router.get("/puzzlescount", async (req, res) => {
   try {
-    const results = await db.query("SELECT id, difficulty FROM sudoku_puzzles");
+    const results = await db.query("SELECT puzzle_id, difficulty FROM sudoku_puzzles");
     return res.json(results.rows);
   } catch (err) {
     console.error(err)
@@ -14,7 +14,7 @@ router.get("/puzzle/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const results = await db.query(
-      "SELECT * FROM sudoku_puzzles WHERE id = $1", [id]
+      "SELECT * FROM sudoku_puzzles WHERE puzzle_id = $1", [id]
     );
     if (results.rows.length) {
       return res.status(200).json(results.rows[0]);

@@ -17,7 +17,7 @@ export default function Sudoku() {
       try {
         const response = await SudokuPuzzleFinder.get(`/puzzle/${id}`);
         setPuzzle(response.data.puzzle);
-        setPuzzleID(response.data.id);
+        setPuzzleID(response.data.puzzle_id);
         setDifficulty(response.data.difficulty);
       } catch (err) {
         console.log(err);
