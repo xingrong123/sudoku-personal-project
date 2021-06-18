@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react'
 import { Link } from 'react-router-dom';
 
 import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
-import AuthApi from '../apis/AuthApi';
+import { getUsernameFromTokenAuthencation } from '../logic/Authentication';
 
 export default function HomePage() {
   const [puzzlesCount, setPuzzlesCount] = useState([]);
@@ -18,26 +18,23 @@ export default function HomePage() {
     }
     async function fetchDataForUser() {
       try {
-        const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
-        if (response.data.isAuthenticated) {
-          const body = {
-            username: response.data.username
-          }
-          SudokuPuzzleFinder
-            .post("/puzzlescount", body)
-            .then(res => {
-              console.log(res.data.wins)
-              setPuzzlesCount(res.data.puzzles);
-              setPuzzleProgress(res.data.wins);
-            })
-            .catch(err => console.error(err.data));
+        const username = await getUsernameFromTokenAuthencation();
+        const body = {
+          username: username
         }
-
+        SudokuPuzzleFinder
+          .post("/puzzlescount", body)
+          .then(res => {
+            console.log(res.data.wins);
+            setPuzzlesCount(res.data.puzzles);
+            setPuzzleProgress(res.data.wins);
+          })
+          .catch(err => {throw err});
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
-    if (localStorage.getItem("token") !== null){
+    if (localStorage.getItem("token") !== null) {
       fetchDataForUser();
     } else {
       fetchData();

@@ -5,9 +5,10 @@ import Board from './Board'
 import GameControls from './GameControls';
 
 import "./Game.css";
-import AuthApi from '../../apis/AuthApi';
 import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 import { Timer } from './Timer';
+import { getUsernameFromTokenAuthencation } from '../../logic/Authentication'
+import { checkWin, getTimeString, getTimeJson } from '../../logic/Sudoku';
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -89,172 +90,100 @@ export default class Game extends React.Component {
 
   async saveWinDetails() {
     try {
-      const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
-      if (response.data.isAuthenticated) {
-        const body = {
-          username: response.data.username,
-          puzzle_id: this.props.id,
-          time_spent: this.getTimeString(this.state.startTime, this.state.time)
-        }
-        SudokuPuzzleFinder
+      const username = await getUsernameFromTokenAuthencation();
+      const body = {
+        username: username,
+        puzzle_id: this.props.id,
+        time_spent: getTimeString(this.state.startTime, this.state.time)
+      }
+      SudokuPuzzleFinder
         .post("/win", body)
         .then(res => toast.success(res.data))
-        .catch(err => toast.error(err.data))
-      }
-    } catch(error) {
+        .catch(err => { throw err })
+    } catch (error) {
       console.error(error.data)
       toast.error(error.data)
-  }
-}
-
-checkWin(squares) {
-  var check = [];
-  for (let i = 0; i < 9; i++) {
-    check.push(squares.slice(i * 9, i * 9 + 9));
-  }
-  for (let i = 0; i < 9; i++) {
-    let array = []
-    for (let j = 0; j < 9; j++) {
-      array = array.concat(squares[j * 9 + i])
     }
-    check.push(array);
   }
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      let array = []
-      for (let k = 0; k < 3; k++) {
-        for (let m = 0; m < 3; m++) {
-          const index = (i * 3 + k) * 9 + (j * 3 + m);
-          array = array.concat(squares[index]);
+
+  numberHandler(move) {
+    var squares = this.state.squares.slice();
+    const moveDetails = this.getMoveDetails(squares, this.state.selectedSquare, move);
+    if (this.state.selectedSquare === null || squares[this.state.selectedSquare] === move) {
+      return;
+    }
+    squares[this.state.selectedSquare] = move;
+    var history = this.state.history.slice(0, this.state.move + 1);
+    this.setState({ squares: squares, history: history.concat(moveDetails), move: this.state.move + 1 });
+    if (!squares.includes(null)) {
+      const isWin = checkWin(squares);
+      if (isWin) {
+        if (this.state.win === false) {
+          this.saveWinDetails();
+          this.setState({ win: true });
         }
-      }
-      check.push(array);
-    }
-  }
-  for (const one of check) {
-    for (let i = 1; i <= 9; i++) {
-      if (!one.includes(i)) {
+      } else {
         this.setState({ win: false });
-        return;
       }
     }
   }
-  if (this.state.win === false) {
-    this.saveWinDetails();
-  }
-  this.setState({ win: true });
-}
 
-numberHandler(move) {
-  var squares = this.state.squares.slice();
-  const moveDetails = this.getMoveDetails(squares, this.state.selectedSquare, move);
-  if (this.state.selectedSquare === null || squares[this.state.selectedSquare] === move) {
-    return;
+  handleKeyPress(num) {
+    if (isNaN(num) || num < 1 || num > 9) {
+      return;
+    }
+    const move = parseInt(num);
+    this.numberHandler(move)
   }
-  squares[this.state.selectedSquare] = move;
-  var history = this.state.history.slice(0, this.state.move + 1);
-  this.setState({ squares: squares, history: history.concat(moveDetails), move: this.state.move + 1 });
-  if (!squares.includes(null)) {
-    this.checkWin(squares);
-  }
-}
 
-handleKeyPress(num) {
-  if (isNaN(num) || num < 1 || num > 9) {
-    return;
+  undo() {
+    const history = this.state.history.slice();
+    const move = this.state.move;
+    const moveDetails = history[move]
+    var squares = this.state.squares.slice()
+    squares[moveDetails.square] = moveDetails.previousState;
+    this.setState({ squares: squares, move: move - 1, win: false });
+    if (!squares.includes(null)) {
+      this.checkWin(squares);
+    }
   }
-  const move = parseInt(num);
-  this.numberHandler(move)
-}
 
-undo() {
-  const history = this.state.history.slice();
-  const move = this.state.move;
-  const moveDetails = history[move]
-  var squares = this.state.squares.slice()
-  squares[moveDetails.square] = moveDetails.previousState;
-  this.setState({ squares: squares, move: move - 1, win: false });
-  if (!squares.includes(null)) {
-    this.checkWin(squares);
+  redo() {
+    const history = this.state.history.slice()
+    const move = this.state.move + 1;
+    const moveDetails = history[move];
+    var squares = this.state.squares.slice()
+    squares[moveDetails.square] = moveDetails.move;
+    this.setState({ squares: squares, move: move, win: false })
+    if (!squares.includes(null)) {
+      this.checkWin(squares);
+    }
   }
-}
 
-redo() {
-  const history = this.state.history.slice()
-  const move = this.state.move + 1;
-  const moveDetails = history[move];
-  var squares = this.state.squares.slice()
-  squares[moveDetails.square] = moveDetails.move;
-  this.setState({ squares: squares, move: move, win: false })
-  if (!squares.includes(null)) {
-    this.checkWin(squares);
-  }
-}
-
-// taken from https://stackoverflow.com/questions/42488048/how-can-i-sum-properties-from-two-objects
-// function below takes as many objects and sums them by key using reduce
-getTimeString(startTime, timeSpent) {
-  var time = new Date()
-  time.setHours(startTime.hours + timeSpent.hours)
-  time.setMinutes(startTime.minutes + timeSpent.minutes)
-  time.setSeconds(startTime.seconds + timeSpent.seconds)
-  const pad = (n) => {
-    return n < 10 ? '0' + n : n;
-  }
-  return pad(time.getHours()) + ":" + pad(time.getMinutes()) + ":" + pad(time.getSeconds())
-}
-
-async save() {
-  try {
-    const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
-    if (response.data.isAuthenticated) {
-      const username = response.data.username;
-      const puzzle_id = this.props.id;
-      const moves = this.state.move;
-      const squares = this.state.squares.slice();
-      const history = this.state.history.slice();
-      const time_spent = this.getTimeString(this.state.startTime, this.state.time);
+  async save() {
+    try {
+      const username = await getUsernameFromTokenAuthencation()
       const body = {
-        username,
-        puzzle_id,
-        moves,
-        squares,
-        history,
-        time_spent
+        username: username,
+        puzzle_id: this.props.id,
+        moves: this.state.move,
+        squares: this.state.squares.slice(),
+        history: this.state.history.slice(),
+        time_spent: getTimeString(this.state.startTime, this.state.time)
       };
-      try {
-        const response2 = await SudokuPuzzleFinder.post("/save", body);
-        toast.success(response2.data)
-      } catch (error) {
-        console.error(error.response.data)
-        toast.error(error.response.data)
-      }
-
-    } else {
-      console.log(response.data)
-      toast.error(response.data)
+      SudokuPuzzleFinder
+        .post("/save", body)
+        .then(res => toast.success(res.data))
+        .catch(err => { throw err })
+    } catch (err) {
+      console.error(err.response.data)
+      toast.error(err.response.data)
     }
-  } catch (err) {
-    console.error(err.response.data)
-    toast.error(err.response.data)
   }
-}
 
-getTimeJson(time) {
-  // time input has to be in the format "hh:mm:ss" 
-  const timeArray = time.split(":");
-  return ({
-    hours: parseInt(timeArray[0]),
-    minutes: parseInt(timeArray[1]),
-    seconds: parseInt(timeArray[2])
-  })
-}
-
-async load() {
-  try {
-    const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } });
-    if (response.data.isAuthenticated) {
-      const username = response.data.username;
+  async load() {
+    try {
+      const username = await getUsernameFromTokenAuthencation();
       const puzzle_id = isNaN(this.props.id) ? parseInt(this.props.id) : this.props.id;
       const body = {
         username,
@@ -265,119 +194,116 @@ async load() {
         const squares = response2.data[0].squares;
         const moves = response2.data[0].moves;
         const history = response2.data[0].history;
-        const startTime = this.getTimeJson(response2.data[0].time_spent);
+        const startTime = getTimeJson(response2.data[0].time_spent);
         this.setState({ history: history, squares: squares, move: moves, startTime: startTime })
         console.log("load successfully")
         toast.success("load successfully")
       } catch (error) {
-        console.error(error.response.data)
-        toast.error(error.response.data)
+        throw error;
       }
-    } else {
-      console.log(response.data)
-      toast.error(response.data)
+    } catch (err) {
+      console.error(err.response.data)
+      toast.error(err.response.data)
     }
-  } catch (err) {
-    console.error(err.response.data)
-    toast.error(err.response.data)
   }
-}
 
-gameControlCLickHandler(value) {
-  switch (value) {
-    case "redo":
-      this.redo();
-      break;
-    case "undo":
-      this.undo();
-      break;
-    case "save":
-      this.save();
-      break;
-    case "load":
-      this.load();
-      break;
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-      this.numberHandler(value);
-      break;
-    default:
-      // not supposed to happen
-      console.error("button press unrecognized: " + value);
-  }
-}
-
-setTime(hrs, mins, secs) {
-  const time = {
-    hours: hrs,
-    minutes: mins,
-    seconds: secs
-  };
-  this.setState({ time: time });
-}
-
-render() {
-  const squares = this.state.squares.slice();
-  const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
-  const winState = this.state.win ? "you win!!!" : "";
-  const undoState = (this.state.move === 0);
-  const redoState = (this.state.move + 1 === this.state.history.length);
-  const history = this.state.history.slice()
-  const moveHistory = history.map((moveDetails, order) => {
-    if (order === 0) {
-      return null;
+  gameControlCLickHandler(value) {
+    switch (value) {
+      case "redo":
+        this.redo();
+        break;
+      case "undo":
+        this.undo();
+        break;
+      case "save":
+        this.save();
+        break;
+      case "load":
+        this.load();
+        break;
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+        this.numberHandler(value);
+        break;
+      default:
+        // not supposed to happen
+        console.error("button press unrecognized: " + value);
     }
-    const text = `ROW ${moveDetails.square % 9 + 1} COL ${Math.floor(moveDetails.square / 9) + 1} changes from ${moveDetails.previousState} to ${moveDetails.move}`
-    const moveColor = this.state.move === order ? "lightblue" : "";
+  }
+
+  setTime(hrs, mins, secs) {
+    const time = {
+      hours: hrs,
+      minutes: mins,
+      seconds: secs
+    };
+    this.setState({ time: time });
+  }
+
+  render() {
+    const squares = this.state.squares.slice();
+    const puzzleIndex = this.state.puzzleIndex ? this.state.puzzleIndex.slice() : null;
+    const winState = this.state.win ? "you win!!!" : "";
+    const undoState = (this.state.move === 0);
+    const redoState = (this.state.move + 1 === this.state.history.length);
+    const history = this.state.history.slice()
+    const moveHistory = history.map((moveDetails, order) => {
+      if (order === 0) {
+        return null;
+      }
+      const text = order + `. ROW ${moveDetails.square % 9 + 1} COL ${Math.floor(moveDetails.square / 9) + 1} changes from ${moveDetails.previousState} to ${moveDetails.move}`
+      const moveColor = this.state.move === order ? "lightblue" : "";
+      return (
+        <li key={order} className="list-group-item" style={{ backgroundColor: moveColor }}>
+          {text}
+        </li>
+      );
+    })
     return (
-      <li key={order} className="list-group-item" style={{ backgroundColor: moveColor }}>
-        {text}
-      </li>
-    );
-  })
-  return (
-    <div className="text-center">
-      <div className="container">
-        <div className="d-lg-flex justify-content-center">
-          <div className="d-md-flex align-items-center text-center ">
-            <div className="game m-4">
-              <div className="game-board">
-                <h1>Puzzle #{this.props.id}</h1>
-                <p>Difficulty: {this.props.difficulty}</p>
-                <Board
-                  squares={squares}
-                  selectedSquare={this.state.selectedSquare}
-                  puzzleIndex={puzzleIndex}
-                  onClick={(i) => this.handleClick(i)}
-                  onContextMenu={(i, e) => this.handleContextMenu(i, e)}
-                  onKeyPress={(num) => this.handleKeyPress(num)}
-                />
+      <div className="text-center">
+        <div className="container">
+          <div className="d-lg-flex justify-content-center">
+            <div className="d-md-flex text-center ">
+              <div className="game m-4">
+                <div className="game-board">
+                  <h1>Puzzle #{this.props.id}</h1>
+                  <p>Difficulty: {this.props.difficulty}</p>
+                  <Board
+                    squares={squares}
+                    selectedSquare={this.state.selectedSquare}
+                    puzzleIndex={puzzleIndex}
+                    onClick={(i) => this.handleClick(i)}
+                    onContextMenu={(i, e) => this.handleContextMenu(i, e)}
+                    onKeyPress={(num) => this.handleKeyPress(num)}
+                  />
+                </div>
+                <br></br>
               </div>
-              <br></br>
+              <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
             </div>
-            <GameControls onClick={(i) => this.gameControlCLickHandler(i)} undoState={undoState} redoState={redoState} />
-          </div>
-          <div className="game-info m-4">
-            <div>{winState}</div>
-            <h1>History</h1>
-            <Timer
-              winState={this.state.win}
-              time={this.state.time}
-              setTime={this.setTime}
-              startTime={this.state.startTime}
-            />
-            <ol className="list-group list-group-numbered">{moveHistory}</ol>
+            <div className="game-info m-4">
+              <div>{winState}</div>
+              <h1>History</h1>
+              <Timer
+                winState={this.state.win}
+                time={this.state.time}
+                setTime={this.setTime}
+                startTime={this.state.startTime}
+              />
+              <div className="overflow-auto" style={{ height: 400 }}>
+                <ol className="list-group text-start">{moveHistory.reverse()}</ol>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 }
