@@ -3,10 +3,36 @@ import { Link } from 'react-router-dom';
 
 import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
 import { getUsernameFromTokenAuthencation } from '../logic/Authentication';
+import { FilterOffCanvas } from './FilterOffCanvas';
 
-export default function HomePage() {
+export default function HomePage(props) {
   const [puzzlesCount, setPuzzlesCount] = useState([]);
   const [puzzleProgress, setPuzzleProgress] = useState(null);
+
+  const [filterOn, setFilterOn] = useState(false);
+  const [filterVariables, setFilterVariables] = useState(
+    {
+      difficulty: {
+        easy: true,
+        medium: true,
+        hard: true,
+        expert: true
+      },
+      progress: {
+        unattempted: true,
+        inprogress: true,
+        completed: true
+      }
+    }
+  );
+
+  console.log(filterVariables)
+
+  const setFilter = (filterState, variables) => {
+    setFilterOn(filterState)
+    setFilterVariables(variables)
+  }
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -29,9 +55,10 @@ export default function HomePage() {
             setPuzzlesCount(res.data.puzzles);
             setPuzzleProgress(res.data.wins);
           })
-          .catch(err => {throw err});
+          .catch(err => { throw err });
       } catch (error) {
         console.error(error);
+        fetchData();
       }
     }
     if (localStorage.getItem("token") !== null) {
@@ -69,9 +96,19 @@ export default function HomePage() {
     return "not attempted"
   }
 
+  var filterButtonColor = filterOn ? "btn btn-lg text-danger" : "btn btn-lg"
+
   return (
     <Fragment>
       <h1 className="my-4 text-center">Choose puzzle</h1>
+      <div className="text-end">
+        <button type="button" className={filterButtonColor} data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilter">
+          {filterOn ? "filtered" : ""}
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-filter" viewBox="0 0 16 16">
+            <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+          </svg>
+        </button>
+      </div>
       <table className="table table-hover table-bordered align-middle text-center table-fixed">
         <thead>
           <tr className="table-dark">
@@ -94,6 +131,7 @@ export default function HomePage() {
           )}
         </tbody>
       </table>
+      <FilterOffCanvas isAuthenticated={props.isAuthenticated} setFilter={(i, j) => setFilter(i, j)} />
     </Fragment>
   );
 }
