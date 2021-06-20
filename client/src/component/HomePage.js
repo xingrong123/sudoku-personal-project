@@ -6,31 +6,41 @@ import { getUsernameFromTokenAuthencation } from '../logic/Authentication';
 import { FilterOffCanvas } from './FilterOffCanvas';
 
 export default function HomePage(props) {
-  const [puzzlesCount, setPuzzlesCount] = useState([]);
-  const [puzzleProgress, setPuzzleProgress] = useState(null);
+  const [puzzlesCount, setPuzzlesCount] = useState([]);       // puzzle_id, difficulty
+  const [puzzleProgress, setPuzzleProgress] = useState(null); // puzzle_id, time_spent, completed
+  const initFilterState = {
+    easy: true,
+    medium: true,
+    hard: true,
+    expert: true,
+    unattempted: true,
+    inprogress: true,
+    completed: true
+  }
+  const [filterVariables, setFilterVariables] = useState(initFilterState);
 
-  const [filterOn, setFilterOn] = useState(false);
-  const [filterVariables, setFilterVariables] = useState(
-    {
-      difficulty: {
-        easy: true,
-        medium: true,
-        hard: true,
-        expert: true
-      },
-      progress: {
-        unattempted: true,
-        inprogress: true,
-        completed: true
+  function filterCheck(puzzle) {
+    function getProgress(puzzle) {
+      for (let puzzleDetail of puzzleProgress) {
+        if (puzzleDetail.puzzle_id === puzzle.puzzle_id) {
+          if (puzzleDetail.completed === true) {
+            return "completed";
+          } else {
+            return "inprogress"
+          }
+        }
       }
+      return "unattempted";
     }
-  );
 
-  console.log(filterVariables)
-
-  const setFilter = (filterState, variables) => {
-    setFilterOn(filterState)
-    setFilterVariables(variables)
+    if (filterVariables[puzzle.difficulty] === false) {
+      return false;
+    }
+    if (localStorage.getItem("token") === null || !puzzleProgress) {
+      return true;
+    }
+    if (filterVariables[getProgress(puzzle)])
+      return true;
   }
 
   useEffect(() => {
@@ -39,7 +49,7 @@ export default function HomePage(props) {
         const response = await SudokuPuzzleFinder.get("/puzzlescount");
         setPuzzlesCount(response.data);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     }
     async function fetchDataForUser() {
@@ -86,24 +96,24 @@ export default function HomePage(props) {
   const getProgress = (id) => {
     for (const row of puzzleProgress) {
       if (row.puzzle_id === id) {
-        if (row.completed === 1) {
+        if (row.completed === true) {
           return `completed in ${row.time_spent}`;
         } else {
           return `in progress`
         }
       }
     }
-    return "not attempted"
+    return "unattempted"
   }
 
-  var filterButtonColor = filterOn ? "btn btn-lg text-danger" : "btn btn-lg"
+  var filterButtonColor = (filterVariables === initFilterState) ? "btn btn-lg text-danger" : "btn btn-lg"
 
   return (
     <Fragment>
       <h1 className="my-4 text-center">Choose puzzle</h1>
       <div className="text-end">
         <button type="button" className={filterButtonColor} data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilter">
-          {filterOn ? "filtered" : ""}
+          {(filterVariables === initFilterState) ? "filtered" : ""}
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-filter" viewBox="0 0 16 16">
             <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
           </svg>
@@ -119,7 +129,11 @@ export default function HomePage(props) {
           </tr>
         </thead>
         <tbody>
-          {puzzlesCount.map(
+          {/* 
+          for filtering array
+          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+           */}
+          {puzzlesCount.filter(puzzle => { return filterCheck(puzzle) }).map(
             index => (
               <tr className="table-light" key={index.puzzle_id}>
                 <td>{index.puzzle_id}</td>
@@ -131,7 +145,7 @@ export default function HomePage(props) {
           )}
         </tbody>
       </table>
-      <FilterOffCanvas isAuthenticated={props.isAuthenticated} setFilter={(i, j) => setFilter(i, j)} />
+      <FilterOffCanvas isAuthenticated={props.isAuthenticated} filterVariables={filterVariables} setFilter={(j) => setFilterVariables(j)} />
     </Fragment>
   );
 }

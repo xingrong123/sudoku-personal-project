@@ -5,24 +5,24 @@ export const FilterOffCanvas = (props) => {
   const difficulty = ["easy", "medium", "hard", "expert"];
   const progress = ["unattempted", "in progress", "completed"]
 
-  function filterOnClick() {
-    props.setFilter(true, {});
-    document.getElementById("filterCanvasClose").click();
+  function something(variable, newState) {
+    // updating object properties
+    // https://stackoverflow.com/questions/9454863/updating-javascript-object-property/48209957
+    // use string of variable as key of object
+    // https://stackoverflow.com/questions/19837916/creating-object-with-dynamic-keys
+    const new_obj = { ...props.filterVariables, [variable]: newState }
+    props.setFilter(new_obj);
   }
 
   function resetOnClick() {
-    props.setFilter(false, {
-      difficulty: {
-        easy: true,
-        medium: true,
-        hard: true,
-        expert: true
-      },
-      progress: {
-        unattempted: true,
-        inprogress: true,
-        completed: true
-      }
+    props.setFilter({
+      easy: true,
+      medium: true,
+      hard: true,
+      expert: true,
+      unattempted: true,
+      inprogress: true,
+      completed: true
     });
     document.getElementById("filterCanvasClose").click();
   }
@@ -41,7 +41,7 @@ export const FilterOffCanvas = (props) => {
               <td><span className="fs-6 text-light">Difficulty</span></td>
               <td>
                 <div className="dropdown my-1">
-                  <AccordionRadio values={difficulty} title="Difficulty" disabled={false} />
+                  <AccordionRadio values={difficulty} title="Difficulty" disabled={false} something={(i, j) => something(i, j)} filterVariables={props.filterVariables} />
                 </div>
               </td>
             </tr>
@@ -51,7 +51,7 @@ export const FilterOffCanvas = (props) => {
               <td><span className="fs-6 text-light">Progress</span></td>
               <td>
                 <div className="dropdown my-1">
-                  <AccordionRadio values={progress} title="Progress" disabled={!props.isAuthenticated} />
+                  <AccordionRadio values={progress} title="Progress" disabled={!props.isAuthenticated} something={(i, j) => something(i, j)} filterVariables={props.filterVariables} />
                 </div>
               </td>
             </tr>
@@ -59,9 +59,6 @@ export const FilterOffCanvas = (props) => {
           </tbody>
         </table>
 
-        <button type="button" className="btn btn-success m-1" onClick={filterOnClick}>
-          Filter
-        </button>
         <button type="button" className="btn btn-secondary m-1" onClick={resetOnClick}>
           Reset
         </button>
@@ -76,9 +73,12 @@ export const FilterOffCanvas = (props) => {
 function AccordionRadio(props) {
   function createAccordionItemAttr(arr) {
     return arr.map(value => {
+      const valueNoSpace = value.replace(/\s+/g, '');
       return {
         value: value,
-        id: `flexSwitch${value.replace(/\s+/g, '')}`
+        id: `flexSwitch${valueNoSpace}`,
+        handleChange: (state) => { props.something(valueNoSpace, state) },
+        initialState: props.filterVariables[valueNoSpace]
       };
     })
   }
@@ -102,8 +102,8 @@ function AccordionRadio(props) {
           <div className="accordion-body">
             {itemsAtr.map(obj => {
               return (
-                <div className="form-check form-switch">
-                  <input className="form-check-input" type="checkbox" id={obj.id} style={{ cursor: 'pointer' }} />
+                <div className="form-check form-switch" key={obj.value}>
+                  <input className="form-check-input" type="checkbox" id={obj.id} style={{ cursor: 'pointer' }} checked={obj.initialState} onChange={() => obj.handleChange(!obj.initialState)} />
                   <label className="form-check-label">{obj.value}</label>
                 </div>
               )

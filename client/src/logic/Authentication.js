@@ -12,6 +12,7 @@ export async function getUsernameFromTokenAuthencation() {
       );
     }
   } catch (error) {
+    localStorage.removeItem("token");
     throw error
   }
 }

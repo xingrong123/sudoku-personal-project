@@ -16,7 +16,7 @@ router.post("/puzzlescount", async (req, res) => {
     console.log(username)
     const results = db.query("SELECT puzzle_id, difficulty FROM sudoku_puzzles");
     const results2 = db.query(`
-      SELECT puzzle_id, time_spent, 0 AS completed
+      SELECT puzzle_id, time_spent, false AS completed
         FROM puzzle_progress AS pp1
         WHERE username=$1
           AND NOT EXISTS (
@@ -26,7 +26,7 @@ router.post("/puzzlescount", async (req, res) => {
                 AND puzzle_id=pp1.puzzle_id
           )
       UNION
-      SELECT puzzle_id, time_spent, 1 AS completed
+      SELECT puzzle_id, time_spent, true AS completed
         FROM puzzle_win
         WHERE username=$1`,
       [username]);
