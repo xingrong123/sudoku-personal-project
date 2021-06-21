@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
-import {toast} from "react-toastify";
+import React, { useState, useContext } from 'react'
+import { toast } from "react-toastify";
 
 import AuthApi from '../apis/AuthApi';
+import { AppContext } from '../context/AppContext';
 
-export default function RegisterModal(props) {
+export default function RegisterModal() {
   const [inputs, setInputs] = useState({
     username: "",
     password: ""
   });
+  const { setIsAuthenticated, setUsername } = useContext(AppContext)
 
   const { username, password } = inputs;
 
@@ -23,15 +25,15 @@ export default function RegisterModal(props) {
       const response = await AuthApi.post("/register", body);
       console.log(response)
       localStorage.setItem("token", response.data.token)
-      props.setAuth(true)
-      props.setUsername(body.username)
+      setIsAuthenticated(true)
+      setUsername(body.username)
       toast.dark("Account created!")
       setInputs({
         username: "",
         password: ""
       })
       document.getElementById("closeRegister").click();
-      window.location.reload(); 
+      window.location.reload();
     } catch (err) {
       console.error(err.response.data)
       toast.error(err.response.data)

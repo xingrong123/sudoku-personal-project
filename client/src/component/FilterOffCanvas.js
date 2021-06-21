@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { AppContext } from '../context/AppContext';
 
 export const FilterOffCanvas = (props) => {
 
   const difficulty = ["easy", "medium", "hard", "expert"];
   const progress = ["unattempted", "in progress", "completed"]
+  const { isAuthenticated } = useContext(AppContext);
 
   function something(variable, newState) {
     // updating object properties
@@ -48,10 +50,10 @@ export const FilterOffCanvas = (props) => {
 
             {/* Progress */}
             <tr>
-              <td><span className="fs-6 text-light">Progress</span></td>
+              <td><span className="fs-6 text-light">Progress *</span></td>
               <td>
                 <div className="dropdown my-1">
-                  <AccordionRadio values={progress} title="Progress" disabled={!props.isAuthenticated} something={(i, j) => something(i, j)} filterVariables={props.filterVariables} />
+                  <AccordionRadio values={progress} title="Progress" disabled={!isAuthenticated} something={(i, j) => something(i, j)} filterVariables={props.filterVariables} />
                 </div>
               </td>
             </tr>
@@ -64,6 +66,9 @@ export const FilterOffCanvas = (props) => {
         </button>
       </div>
       <div className="offcanvas-footer">
+        <div className="m-2 text-secondary">
+          * Login to filter progress
+        </div>
 
       </div>
     </div>
@@ -94,9 +99,16 @@ function AccordionRadio(props) {
     <div className="accordion my-1" id={accordionId} >
       <div className="accordion-item">
         <h2 className="accordion-header" id="headingOne">
-          <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target={collapseIdTarget} disabled={props.disabled}>
-            Select {props.title}
-          </button>
+          {props.disabled ?
+            <button type="button" class="accordion-button collapsed" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tooltip on bottom">
+              Select {props.title}
+            </button>
+            :
+            <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target={collapseIdTarget} >
+              Select {props.title}
+            </button>
+          }
+
         </h2>
         <div id={collapseId} className="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent={accordionIdTarget}>
           <div className="accordion-body">

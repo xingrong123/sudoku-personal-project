@@ -8,17 +8,22 @@ const myRef = React.createRef();
 
 export default function Sudoku() {
   const id = useParams().id;
-  const [puzzle, setPuzzle] = useState([]);
-  const [puzzleID, setPuzzleID] = useState("");
-  const [difficulty, setDifficulty] = useState("");
+  const initPuzzleDetails = {
+    puzzle: [],
+    id: "",
+    difficulty: ""
+  }
+  const [puzzleDetails, setPuzzleDetails] = useState(initPuzzleDetails)
 
   useEffect(() => {
     async function fetchData() {
       try {
         const response = await SudokuPuzzleFinder.get(`/puzzle/${id}`);
-        setPuzzle(response.data.puzzle);
-        setPuzzleID(response.data.puzzle_id);
-        setDifficulty(response.data.difficulty);
+        setPuzzleDetails({
+          puzzle: response.data.puzzle,
+          id: response.data.puzzle_id,
+          difficulty: response.data.difficulty
+        })
       } catch (err) {
         console.log(err);
       }
@@ -28,7 +33,7 @@ export default function Sudoku() {
 
   return (
     <Fragment>
-      {puzzle.length === 81 && puzzleID !== "" && difficulty !== "" ? <Game puzzle={puzzle} id={puzzleID} difficulty={difficulty} ref={myRef} /> : ""}
+      {puzzleDetails !== initPuzzleDetails ? <Game puzzleDetails={puzzleDetails} ref={myRef} /> : ""}
     </Fragment>
   );
 }

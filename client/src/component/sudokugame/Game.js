@@ -14,7 +14,7 @@ export default class Game extends React.Component {
   constructor(props) {
     super(props);
 
-    var puzzle = this.props.puzzle.slice();
+    var puzzle = this.props.puzzleDetails.puzzle.slice();
 
     var puzzleIndex = [];
     if (puzzle) {
@@ -93,7 +93,7 @@ export default class Game extends React.Component {
       const username = await getUsernameFromTokenAuthencation();
       const body = {
         username: username,
-        puzzle_id: this.props.id,
+        puzzle_id: this.props.puzzleDetails.id,
         time_spent: getTimeString(this.state.startTime, this.state.time)
       }
       SudokuPuzzleFinder
@@ -165,7 +165,7 @@ export default class Game extends React.Component {
       const username = await getUsernameFromTokenAuthencation()
       const body = {
         username: username,
-        puzzle_id: this.props.id,
+        puzzle_id: this.props.puzzleDetails.id,
         moves: this.state.move,
         squares: this.state.squares.slice(),
         history: this.state.history.slice(),
@@ -184,7 +184,7 @@ export default class Game extends React.Component {
   async load() {
     try {
       const username = await getUsernameFromTokenAuthencation();
-      const puzzle_id = isNaN(this.props.id) ? parseInt(this.props.id) : this.props.id;
+      const puzzle_id = isNaN(this.props.puzzleDetails.id) ? parseInt(this.props.puzzleDetails.id) : this.props.puzzleDetails.id;
       const body = {
         username,
         puzzle_id
@@ -273,8 +273,8 @@ export default class Game extends React.Component {
             <div className="d-md-flex text-center ">
               <div className="game m-4">
                 <div className="game-board">
-                  <h1>Puzzle #{this.props.id}</h1>
-                  <p>Difficulty: {this.props.difficulty}</p>
+                  <h1>Puzzle #{this.props.puzzleDetails.id}</h1>
+                  <p>Difficulty: {this.props.puzzleDetails.difficulty}</p>
                   <Board
                     squares={squares}
                     selectedSquare={this.state.selectedSquare}

@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useEffect, useContext } from 'react';
 import {
   BrowserRouter as Router,
   useLocation,
@@ -13,6 +13,7 @@ import { AppBar } from './AppBar';
 import Sudoku from './sudokugame/Sudoku';
 import HomePage from './HomePage';
 import AuthApi from '../apis/AuthApi';
+import { AppContextProvider, AppContext } from '../context/AppContext';
 
 if (typeof window !== "undefined") {
   injectStyle();
@@ -20,12 +21,16 @@ if (typeof window !== "undefined") {
 
 export default function App() {
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState("");
+  return (
+    <AppContextProvider>
+      <AppWithContext />
+    </AppContextProvider>
+  );
+}
 
-  const setAuth = (Boolean) => {
-    setIsAuthenticated(Boolean);
-  }
+function AppWithContext() {
+
+  const { setIsAuthenticated, setUsername } = useContext(AppContext)
 
   useEffect(() => {
     try {
@@ -45,34 +50,37 @@ export default function App() {
         setIsAuthenticated(false);
         setUsername("")
       }
-      
+
     } catch (err) {
       console.error(err.message)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <Router>
-      <AppBar isAuthenticated={isAuthenticated} setAuth={setAuth} setUsername={setUsername} username={username} />
+      <header>
+        <AppBar />
+      </header>
+
       <main>
         <div className="container">
-          <MainContent isAuthenticated={isAuthenticated} setAuth={setAuth} setUsername={setUsername} />
+          <MainContent />
+          <ToastContainer />
         </div>
-        <ToastContainer />
       </main>
-
     </Router>
   );
 }
 
-function MainContent(props) {
+function MainContent() {
   let location = useLocation();
   let background = location.state && location.state.background;
   return (
     <Fragment>
       <Switch location={background || location}>
-        <Route exact path="/" children={<HomePage isAuthenticated={props.isAuthenticated} />} />
-        <Route path="/game/:id" children={<Sudoku isAuthenticated={props.isAuthenticated} />} />
+        <Route exact path="/" children={<HomePage />} />
+        <Route path="/game/:id" children={<Sudoku />} />
         <Route render={() => <Redirect to={{ pathname: "/" }} />} />
       </Switch>
     </Fragment>

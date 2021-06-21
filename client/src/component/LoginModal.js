@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { toast } from "react-toastify";
 
 import AuthApi from '../apis/AuthApi';
+import { AppContext } from '../context/AppContext';
 
 export default function LoginModal(props) {
   const [inputs, setInputs] = useState({
     username: "",
     password: ""
   });
+  const { setIsAuthenticated, setUsername } = useContext(AppContext)
 
   const { username, password } = inputs;
 
@@ -22,15 +24,15 @@ export default function LoginModal(props) {
       const body = { username, password };
       const response = await AuthApi.post("/login", body);
       localStorage.setItem("token", response.data.token)
-      props.setAuth(true)
-      props.setUsername(body.username)
+      setIsAuthenticated(true)
+      setUsername(body.username)
       toast.dark("login successfully!")
       setInputs({
         username: "",
         password: ""
       })
       document.getElementById("closeLogin").click();
-      window.location.reload(); 
+      window.location.reload();
     } catch (err) {
       console.error(err.response.data)
       toast.error(err.response.data)

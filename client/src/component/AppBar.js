@@ -1,10 +1,14 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useContext } from 'react'
 
 import RegisterModal from './RegisterModal';
 import LoginModal from './LoginModal';
 import LogoutModal from './LogoutModal';
+import { AppContext } from '../context/AppContext';
 
-export const AppBar = (props) => {
+export const AppBar = () => {
+
+  const { isAuthenticated, username } = useContext(AppContext)
+
 
   return (
     <nav className="navbar navbar-expand-md bg-dark navbar-dark">
@@ -17,7 +21,7 @@ export const AppBar = (props) => {
 
         <div className="collapse navbar-collapse" id="myNavbar">
           <ul className="navbar-nav ms-auto">
-            {!props.isAuthenticated ? (
+            {!isAuthenticated ? (
               <Fragment>
                 <li className="nav-item">
                   <div role="button" className='navbar-brand mx-4' data-bs-toggle="modal" data-bs-target="#registerModal">Register</div>
@@ -30,7 +34,7 @@ export const AppBar = (props) => {
               <Fragment>
                 {/* username */}
                 <li className="nav-item">
-                  <h1 className="navbar-brand mx-4">{props.username}</h1>
+                  <h1 className="navbar-brand mx-4">{username}</h1>
                 </li>
                 <li className="nav-item">
                   <div role="button" className='navbar-brand mx-4' data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</div>
@@ -42,11 +46,11 @@ export const AppBar = (props) => {
         </div>
       </div>
 
-      <RegisterModal setAuth={(i) => props.setAuth(i)} setUsername={(i) => props.setUsername(i)} />
+      <RegisterModal />
 
-      <LoginModal setAuth={(i) => props.setAuth(i)} setUsername={(i) => props.setUsername(i)} />
+      <LoginModal />
 
-      <LogoutModal setAuth={(i) => props.setAuth(i)} setUsername={(i) => props.setUsername(i)} />
+      <LogoutModal />
 
     </nav>
   )
