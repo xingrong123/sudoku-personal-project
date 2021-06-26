@@ -10,8 +10,8 @@ const jwtAccessGenerator = require("./jwtAccessGenerator")
  */
 async function refreshAccessGenerator(user, refreshToken) {
   try {
-    const message = await db.query("SELECT checkRefreshToken($1, $2)", [user, refreshToken]);
-    if (message.rows[0].checkRefreshToken !== "success") {
+    const message = await db.query("SELECT check_refresh_token($1, $2)", [user, refreshToken]);
+    if (message.rows[0].check_refresh_token !== "success") {
       throw Error("invalid refresh token")
     }
     return jwtAccessGenerator(user)

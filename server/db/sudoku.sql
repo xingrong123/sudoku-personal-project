@@ -10,11 +10,11 @@ for line in lines:
     ans = ans + "  (\'{" + (",".join(line[i:i + 1] for i in range(0, len(line), 1)).replace("0", "null")) + "}\'),\n"
 print(ans)
 */
-/*
-DROP DATABASE IF EXISTS sudoku_db;
-CREATE DATABASE sudoku_db;
-\c sudoku_db;
-*/
+
+-- DROP DATABASE IF EXISTS sudoku_db;
+-- CREATE DATABASE sudoku_db;
+-- \c sudoku_db;
+
 DROP TRIGGER IF EXISTS tr_check_number_of_row ON login_info;
 DROP FUNCTION IF EXISTS register;
 DROP FUNCTION IF EXISTS login;
@@ -133,14 +133,14 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION
-checkRefreshToken(
+check_refresh_token(
   username1 VARCHAR(255), 
   refresh VARCHAR(255)
 )
 RETURNS VARCHAR(30) AS
 $$ DECLARE message1 VARCHAR(30);
   BEGIN 
-    IF (1 = (
+    IF (1 <> (
       SELECT COUNT(*) 
         FROM login_info 
         WHERE username=username1 AND refresh_token=refresh AND logged_in=true))

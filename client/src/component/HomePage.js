@@ -55,11 +55,9 @@ export default function HomePage() {
     SudokuPuzzleFinder
       .get("/puzzlescount")
       .then(res => {
-        console.log(res.data)
         setPuzzlesCount(res.data.puzzles);
         if (res.data.wins) {
           const wins = res.data.wins
-          console.log("here wins", wins);
           setPuzzleProgress(wins);
         }
       })

@@ -24,7 +24,6 @@ module.exports = async (req, res, next) => {
       // verification failed for access token
       const { user } = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
       const newAccessToken = await refreshAccessGenerator(user, refreshToken);
-      console.log("2")
       req.user = user;
       res.set("username", user);
       res.cookie("access-token", newAccessToken, { httpOnly: true });

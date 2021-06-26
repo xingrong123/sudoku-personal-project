@@ -23,7 +23,6 @@ router.get("/puzzlescount", authorize, async (req, res) => {
           WHERE username=$1`,
         [username]
       );
-      console.log("wins:", username, results2.rows)
       return res.json({
         puzzles: results.rows,
         wins: results2.rows
