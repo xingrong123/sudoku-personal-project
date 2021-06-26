@@ -15,6 +15,7 @@ DROP DATABASE IF EXISTS sudoku_db;
 CREATE DATABASE sudoku_db;
 \c sudoku_db;
 */
+DROP TRIGGER IF EXISTS tr_check_number_of_row ON login_info;
 DROP FUNCTION IF EXISTS register;
 DROP FUNCTION IF EXISTS login;
 DROP FUNCTION IF EXISTS logout;
@@ -151,3 +152,26 @@ $$ DECLARE message1 VARCHAR(30);
     RETURN message1;
   END; $$
 LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_number_of_row()
+RETURNS TRIGGER AS
+$body$
+BEGIN
+  -- replace 100 by the number of rows you want
+  IF (SELECT count(*) FROM login_info) > 100
+  THEN 
+    DELETE FROM login_info 
+      WHERE login_time
+      IN (
+        SELECT min(login_time) 
+          FROM login_info
+      );
+  END IF;
+  RETURN NEW;
+END;
+$body$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_check_number_of_row 
+BEFORE INSERT ON login_info
+FOR EACH ROW EXECUTE PROCEDURE check_number_of_row();
