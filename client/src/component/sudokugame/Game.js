@@ -7,7 +7,6 @@ import GameControls from './GameControls';
 import "./Game.css";
 import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 import { Timer } from './Timer';
-import { getUsernameFromTokenAuthentication } from '../../logic/Authentication'
 import { checkWin, getTimeString, getTimeJson } from '../../logic/Sudoku';
 
 export default class Game extends React.Component {
@@ -88,22 +87,18 @@ export default class Game extends React.Component {
     this.setState({ squares: squares, win: false, history: history.concat(moveDetails), move: this.state.move + 1 })
   }
 
-  async saveWinDetails() {
-    try {
-      const username = await getUsernameFromTokenAuthentication();
-      const body = {
-        username: username,
-        puzzle_id: this.props.puzzleDetails.id,
-        time_spent: getTimeString(this.state.startTime, this.state.time)
-      }
-      SudokuPuzzleFinder
-        .post("/win", body)
-        .then(res => toast.success(res.data))
-        .catch(err => { throw err })
-    } catch (error) {
-      console.error(error.data)
-      toast.error(error.data)
+  saveWinDetails() {
+    const body = {
+      puzzle_id: this.props.puzzleDetails.id,
+      time_spent: getTimeString(this.state.startTime, this.state.time)
     }
+    SudokuPuzzleFinder
+      .post("/win", body)
+      .then(res => toast.success(res.data))
+      .catch(err => { 
+        console.error(err.response.data)
+        toast.error(err.response.data)
+      })
   }
 
   numberHandler(move) {
@@ -177,7 +172,7 @@ export default class Game extends React.Component {
       })
   }
 
-  async load() {
+  load() {
     const puzzle_id = isNaN(this.props.puzzleDetails.id) ? parseInt(this.props.puzzleDetails.id) : this.props.puzzleDetails.id;
     const body = {
       puzzle_id

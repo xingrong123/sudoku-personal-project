@@ -7,7 +7,7 @@ export const FilterOffCanvas = (props) => {
   const progress = ["unattempted", "in progress", "completed"]
   const { isAuthenticated } = useContext(AppContext);
 
-  function something(variable, newState) {
+  function handleChange(variable, newState) {
     // updating object properties
     // https://stackoverflow.com/questions/9454863/updating-javascript-object-property/48209957
     // use string of variable as key of object
@@ -33,7 +33,13 @@ export const FilterOffCanvas = (props) => {
     <div className="offcanvas offcanvas-end bg-dark text-light" id="offcanvasFilter">
       <div className="offcanvas-header">
         <h5 className="offcanvas-title fs-4" id="offcanvasExampleLabel">Filter</h5>
-        <button type="button" className="btn-close btn-close-white text-reset" id="filterCanvasClose" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button
+          type="button"
+          className="btn-close btn-close-white text-reset"
+          id="filterCanvasClose"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        />
       </div>
       <div className="offcanvas-body">
         <table className="table align-middle">
@@ -43,7 +49,13 @@ export const FilterOffCanvas = (props) => {
               <td><span className="fs-6 text-light">Difficulty</span></td>
               <td>
                 <div className="dropdown my-1">
-                  <AccordionRadio values={difficulty} title="Difficulty" disabled={false} something={(i, j) => something(i, j)} filterVariables={props.filterVariables} />
+                  <AccordionRadio
+                    values={difficulty}
+                    title="Difficulty"
+                    disabled={false}
+                    handleChange={(i, j) => handleChange(i, j)}
+                    filterVariables={props.filterVariables}
+                  />
                 </div>
               </td>
             </tr>
@@ -53,11 +65,16 @@ export const FilterOffCanvas = (props) => {
               <td><span className="fs-6 text-light">Progress *</span></td>
               <td>
                 <div className="dropdown my-1">
-                  <AccordionRadio values={progress} title="Progress" disabled={!isAuthenticated} something={(i, j) => something(i, j)} filterVariables={props.filterVariables} />
+                  <AccordionRadio
+                    values={progress}
+                    title="Progress"
+                    disabled={!isAuthenticated}
+                    handleChange={(i, j) => handleChange(i, j)}
+                    filterVariables={props.filterVariables}
+                  />
                 </div>
               </td>
             </tr>
-
           </tbody>
         </table>
 
@@ -82,7 +99,7 @@ function AccordionRadio(props) {
       return {
         value: value,
         id: `flexSwitch${valueNoSpace}`,
-        handleChange: (state) => { props.something(valueNoSpace, state) },
+        handleChange: (state) => { props.handleChange(valueNoSpace, state) },
         initialState: props.filterVariables[valueNoSpace]
       };
     })

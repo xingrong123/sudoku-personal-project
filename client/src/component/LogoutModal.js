@@ -17,7 +17,8 @@ export default function LogoutModal() {
         toast.dark("Logout!")
       })
       .catch(err => {
-        console.error(err)
+        console.error(err.response.data);
+        toast.error(err.response.data);
       })
 
   }

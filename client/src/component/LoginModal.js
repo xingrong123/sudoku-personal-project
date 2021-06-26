@@ -36,8 +36,8 @@ export default function LoginModal() {
         toast.dark("login successfully!");
       })
       .catch(err => {
-        console.error(err);
-        toast.error(err);
+        console.error(err.response.data);
+        toast.error(err.response.data);
       })
   }
 
