@@ -1,17 +1,25 @@
 import React, { useContext } from 'react'
 import { toast } from "react-toastify";
+import AuthApi from '../apis/AuthApi';
 
 import { AppContext } from '../context/AppContext';
 
-export default function LogoutModal(props) {
+export default function LogoutModal() {
   const { setIsAuthenticated, setUsername } = useContext(AppContext)
 
   function logout() {
-    setUsername("");
-    setIsAuthenticated(false);
-    localStorage.removeItem("token");
-    window.location.reload();
-    toast.dark("Logout!")
+    AuthApi
+      .delete("/logout")
+      .then(() => {
+        setUsername("");
+        setIsAuthenticated(false);
+        window.location.reload();
+        toast.dark("Logout!")
+      })
+      .catch(err => {
+        console.error(err)
+      })
+
   }
 
   return (

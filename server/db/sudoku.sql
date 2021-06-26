@@ -15,10 +15,14 @@ DROP DATABASE IF EXISTS sudoku_db;
 CREATE DATABASE sudoku_db;
 \c sudoku_db;
 */
-
+DROP FUNCTION IF EXISTS register;
+DROP FUNCTION IF EXISTS login;
+DROP FUNCTION IF EXISTS logout;
+DROP FUNCTION IF EXISTS checkRefreshToken;
 DROP TABLE IF EXISTS puzzle_win;
 DROP TABLE IF EXISTS puzzle_progress;
 DROP TABLE IF EXISTS sudoku_puzzles;
+DROP TABLE IF EXISTS login_info;
 DROP TABLE IF EXISTS users;
 DROP TYPE IF EXISTS DIFFICULTY_LEVEL;
 
@@ -38,6 +42,14 @@ CREATE TABLE sudoku_puzzles (
 CREATE TABLE users (
   username VARCHAR(255) PRIMARY KEY,
   password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE login_info (
+  username VARCHAR(255) REFERENCES users(username),
+  refresh_token VARCHAR(255) PRIMARY KEY,
+  login_time TIMESTAMP NOT NULL,
+  logged_in BOOLEAN NOT NULL,
+  ip_address INET NOT NULL
 );
 
 CREATE TABLE puzzle_progress (
@@ -68,3 +80,74 @@ INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES
   ('{null,null,null,null,null,null,null,null,null,null,null,7,5,null,null,null,null,1,null,9,null,null,6,null,null,null,4,null,null,9,null,null,8,4,null,null,null,null,2,4,null,null,null,null,5,null,null,null,null,null,null,3,8,null,null,1,null,7,null,null,null,null,9,null,6,null,null,null,5,null,1,3,null,3,null,8,null,null,null,null,null}', 'hard'),
   ('{4,null,null,6,null,null,null,null,null,null,null,2,null,3,null,null,null,null,null,null,null,null,null,9,8,2,7,8,null,null,4,1,null,null,null,null,9,null,null,null,null,null,null,null,5,null,6,null,null,null,null,null,7,null,null,3,null,null,null,null,4,null,6,null,null,null,null,9,6,2,null,null,null,9,null,null,null,null,null,5,null}', 'expert'),
   ('{null,null,2,null,8,5,null,null,4,null,null,null,null,3,null,null,6,null,null,null,4,2,1,null,null,3,null,null,null,null,null,null,null,null,5,2,null,null,null,null,null,null,3,1,null,9,null,null,null,null,null,null,null,null,8,null,null,null,null,6,null,null,null,2,5,null,4,null,null,null,null,8,null,null,null,null,null,1,6,null,null}', 'expert');
+
+
+
+
+
+CREATE OR REPLACE FUNCTION
+register(username1 VARCHAR(255),
+  hashPassword VARCHAR(255),
+  refresh VARCHAR(255), 
+  ipAddress INET
+)
+RETURNS VARCHAR(30) AS
+$$ DECLARE message1 VARCHAR(30);
+  BEGIN 
+    INSERT INTO users(username, password) VALUES (username1, hashPassword); 
+    INSERT INTO login_info(username, refresh_token, login_time, logged_in, ip_address) 
+      VALUES (username1, refresh, NOW()::timestamp, true, ipAddress);
+    message1 := 'success';
+    RETURN message1;
+  END; $$
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION
+login(username1 VARCHAR(255),
+  refresh VARCHAR(255), 
+  ipAddress INET
+)
+RETURNS VARCHAR(30) AS
+$$ DECLARE message1 VARCHAR(30);
+  BEGIN 
+    INSERT INTO login_info(username, refresh_token, login_time, logged_in, ip_address) 
+      VALUES (username1, refresh, NOW()::timestamp, true, ipAddress);
+    message1 := 'success';
+    RETURN message1;
+  END; $$
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION
+logout(refresh VARCHAR(255))
+RETURNS VARCHAR(30) AS
+$$ DECLARE message1 VARCHAR(30);
+  BEGIN 
+    UPDATE login_info SET logged_in=false WHERE refresh_token=refresh;
+    message1 := 'success';
+    RETURN message1;
+  END; $$
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION
+checkRefreshToken(
+  username1 VARCHAR(255), 
+  refresh VARCHAR(255)
+)
+RETURNS VARCHAR(30) AS
+$$ DECLARE message1 VARCHAR(30);
+  BEGIN 
+    IF (1 = (
+      SELECT COUNT(*) 
+        FROM login_info 
+        WHERE username=username1 AND refresh_token=refresh AND logged_in=true))
+    THEN
+    message1 := 'invalid refresh token';
+    RETURN message1;
+    END IF;
+    message1 := 'success';
+    RETURN message1;
+  END; $$
+LANGUAGE plpgsql;

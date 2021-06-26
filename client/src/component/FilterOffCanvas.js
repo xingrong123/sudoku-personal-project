@@ -100,7 +100,7 @@ function AccordionRadio(props) {
       <div className="accordion-item">
         <h2 className="accordion-header" id="headingOne">
           {props.disabled ?
-            <button type="button" class="accordion-button collapsed" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tooltip on bottom">
+            <button type="button" className="accordion-button collapsed" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tooltip on bottom">
               Select {props.title}
             </button>
             :

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, Fragment } from 'react'
+import React, { useState, useEffect, Fragment, useContext } from 'react'
 import { Link } from 'react-router-dom';
 
 import SudokuPuzzleFinder from '../apis/SudokuPuzzleFinder';
-import { getUsernameFromTokenAuthencation } from '../logic/Authentication';
+import { AppContext } from '../context/AppContext';
 import { FilterOffCanvas } from './FilterOffCanvas';
 
 export default function HomePage() {
+  const { isAuthenticated } = useContext(AppContext)
   const [puzzlesCount, setPuzzlesCount] = useState([]);       // puzzle_id, difficulty
   const [puzzleProgress, setPuzzleProgress] = useState(null); // puzzle_id, time_spent, completed
   const initFilterState = {
@@ -34,48 +35,37 @@ export default function HomePage() {
     }
 
     if (filterVariables[puzzle.difficulty] === false) {
+      // filter by difficulty
       return false;
     }
-    if (localStorage.getItem("token") === null || !puzzleProgress) {
+    // filter by progress
+    if (isAuthenticated === false || !puzzleProgress) {
+      // user is not logged in, not filtered by progress
       return true;
     }
-    if (filterVariables[getProgress(puzzle)])
+    if (filterVariables[getProgress(puzzle)]) {
+      // if the progress of the current puzzle is true in filter variables
       return true;
+    }
+    // passes difficulty filter but not progress filter
+    return false;
   }
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await SudokuPuzzleFinder.get("/puzzlescount");
-        setPuzzlesCount(response.data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    async function fetchDataForUser() {
-      try {
-        const username = await getUsernameFromTokenAuthencation();
-        const body = {
-          username: username
+    SudokuPuzzleFinder
+      .get("/puzzlescount")
+      .then(res => {
+        console.log(res.data)
+        setPuzzlesCount(res.data.puzzles);
+        if (res.data.wins) {
+          const wins = res.data.wins
+          console.log("here wins", wins);
+          setPuzzleProgress(wins);
         }
-        SudokuPuzzleFinder
-          .post("/puzzlescount", body)
-          .then(res => {
-            console.log(res.data.wins);
-            setPuzzlesCount(res.data.puzzles);
-            setPuzzleProgress(res.data.wins);
-          })
-          .catch(err => { throw err });
-      } catch (error) {
-        console.error(error);
-        fetchData();
-      }
-    }
-    if (localStorage.getItem("token") !== null) {
-      fetchDataForUser();
-    } else {
-      fetchData();
-    }
+      })
+      .catch(err => {
+        console.error(err);
+      })
   }, []);
 
   const difficultyStyle = (difficulty) => {

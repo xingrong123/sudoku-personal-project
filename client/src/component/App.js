@@ -33,27 +33,20 @@ function AppWithContext() {
   const { setIsAuthenticated, setUsername } = useContext(AppContext)
 
   useEffect(() => {
-    try {
-      const authToken = async () => {
-        const response = await AuthApi.get("/is-verify", { headers: { token: localStorage.getItem("token") } })
-        if (response.data.isAuthenticated) {
+    AuthApi
+      .get("/is-verify")
+      .then((res) => {
+        console.log(res);
+        if (res.data.isAuthenticated) {
           setIsAuthenticated(true);
-          setUsername(response.data.username)
+          setUsername(res.headers.username);
         } else {
           setIsAuthenticated(false);
-          setUsername("")
+          setUsername("");
         }
-      }
-      if (localStorage.getItem("token") !== null) {
-        authToken();
-      } else {
-        setIsAuthenticated(false);
-        setUsername("")
-      }
+      })
+      .catch(err => { console.error(err.message) })
 
-    } catch (err) {
-      console.error(err.message)
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

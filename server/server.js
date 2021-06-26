@@ -3,20 +3,23 @@ const express = require("express")
 const path = require('path');
 const cors = require("cors");
 const app = express();
+var cookieParser = require('cookie-parser');
 
 // middleware for 
-app.use(cors());
-
-// app.use((req, res, next) => {
-//   console.log("yeah our middle ware");
-//   next();
-// })
+const corsConfig = {
+  credentials: true,
+  origin: true,
+  exposedHeaders: 'username',
+};
+app.use(cors(corsConfig));
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '/../client/build')));
 
 // Middleware to recognize the incoming Request Object as a JSON Object.
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.use("/auth", require("./routes/jwtAuth"));
 

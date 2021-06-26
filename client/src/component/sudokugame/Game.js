@@ -7,7 +7,7 @@ import GameControls from './GameControls';
 import "./Game.css";
 import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 import { Timer } from './Timer';
-import { getUsernameFromTokenAuthencation } from '../../logic/Authentication'
+import { getUsernameFromTokenAuthentication } from '../../logic/Authentication'
 import { checkWin, getTimeString, getTimeJson } from '../../logic/Sudoku';
 
 export default class Game extends React.Component {
@@ -90,7 +90,7 @@ export default class Game extends React.Component {
 
   async saveWinDetails() {
     try {
-      const username = await getUsernameFromTokenAuthencation();
+      const username = await getUsernameFromTokenAuthentication();
       const body = {
         username: username,
         puzzle_id: this.props.puzzleDetails.id,
@@ -160,51 +160,43 @@ export default class Game extends React.Component {
     }
   }
 
-  async save() {
-    try {
-      const username = await getUsernameFromTokenAuthencation()
-      const body = {
-        username: username,
-        puzzle_id: this.props.puzzleDetails.id,
-        moves: this.state.move,
-        squares: this.state.squares.slice(),
-        history: this.state.history.slice(),
-        time_spent: getTimeString(this.state.startTime, this.state.time)
-      };
-      SudokuPuzzleFinder
-        .post("/save", body)
-        .then(res => toast.success(res.data))
-        .catch(err => { throw err })
-    } catch (err) {
-      console.error(err.response.data)
-      toast.error(err.response.data)
-    }
+  save() {
+    const body = {
+      puzzle_id: this.props.puzzleDetails.id,
+      moves: this.state.move,
+      squares: this.state.squares.slice(),
+      history: this.state.history.slice(),
+      time_spent: getTimeString(this.state.startTime, this.state.time)
+    };
+    SudokuPuzzleFinder
+      .post("/save", body)
+      .then(res => toast.success(res.data))
+      .catch(err => {
+        console.error(err.response.data)
+        toast.error(err.response.data)
+      })
   }
 
   async load() {
-    try {
-      const username = await getUsernameFromTokenAuthencation();
-      const puzzle_id = isNaN(this.props.puzzleDetails.id) ? parseInt(this.props.puzzleDetails.id) : this.props.puzzleDetails.id;
-      const body = {
-        username,
-        puzzle_id
-      };
-      try {
-        const response2 = await SudokuPuzzleFinder.post("/load", body);
-        const squares = response2.data[0].squares;
-        const moves = response2.data[0].moves;
-        const history = response2.data[0].history;
-        const startTime = getTimeJson(response2.data[0].time_spent);
+    const puzzle_id = isNaN(this.props.puzzleDetails.id) ? parseInt(this.props.puzzleDetails.id) : this.props.puzzleDetails.id;
+    const body = {
+      puzzle_id
+    };
+    SudokuPuzzleFinder
+      .post("/load", body)
+      .then(res => {
+        const squares = res.data[0].squares;
+        const moves = res.data[0].moves;
+        const history = res.data[0].history;
+        const startTime = getTimeJson(res.data[0].time_spent);
         this.setState({ history: history, squares: squares, move: moves, startTime: startTime })
         console.log("load successfully")
         toast.success("load successfully")
-      } catch (error) {
-        throw error;
-      }
-    } catch (err) {
-      console.error(err.response.data)
-      toast.error(err.response.data)
-    }
+      })
+      .catch(err => {
+        console.error(err.response.data)
+        toast.error(err.response.data)
+      })
   }
 
   gameControlCLickHandler(value) {

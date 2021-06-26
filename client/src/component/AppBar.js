@@ -9,7 +9,6 @@ export const AppBar = () => {
 
   const { isAuthenticated, username } = useContext(AppContext)
 
-
   return (
     <nav className="navbar navbar-expand-md bg-dark navbar-dark">
       <div className="container">

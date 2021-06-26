@@ -3,5 +3,6 @@ import axios from "axios";
 let development = process.env.NODE_ENV !== 'production';
 
 export default axios.create({
-  baseURL: (development ? 'http://localhost:3003' : '') + "/auth"
+  baseURL: (development ? 'http://localhost:3003' : '') + "/auth",
+  withCredentials: true
 });

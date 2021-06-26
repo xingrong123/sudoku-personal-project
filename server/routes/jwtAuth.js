@@ -1,9 +1,11 @@
 const router = require("express").Router();
 const db = require("../db");
 const bcrypt = require('bcrypt');
-const jwtGenerator = require('../utils/jwtGenerator');
+const jwtAccessGenerator = require('../utils/jwtAccessGenerator');
+const jwtRefreshGenerator = require('../utils/jwtRefreshGenerator')
 const validInfo = require('../middleware/validInfo');
 const authorize = require('../middleware/authorize');
+const { request } = require("express");
 // registering
 
 router.post("/register", validInfo, async (req, res) => {
@@ -25,17 +27,22 @@ router.post("/register", validInfo, async (req, res) => {
     const salt = await bcrypt.genSalt(saltRounds);
     const hash = await bcrypt.hash(password, salt);
 
-    // insert user into db
-    const newUser = await db.query(
-      "INSERT INTO users(username, password) VALUES ($1, $2) RETURNING *", [username, hash]
-    );
-
     // generate jwt token
-    const token = jwtGenerator(newUser.rows[0].username);
+    const accessToken = jwtAccessGenerator(username);
+    const refreshToken = jwtRefreshGenerator(username);
 
-    res.json(
-      { token }
-    )
+    // insert user into db
+    const ipAddress = req.ip;
+    const message = await db.query(
+      "SELECT register($1, $2, $3, $4)", [username, hash, refreshToken, ipAddress]
+    );
+    if (message.rows[0].register !== "success") {
+      return res.status(500).send("Server error")
+    }
+    res.cookie("access-token", accessToken, { httpOnly: true })
+    res.cookie("refresh-token", refreshToken, { httpOnly: true })
+    res.set("username", username);
+    res.json(null)
 
   } catch (err) {
     console.error(err.message);
@@ -46,8 +53,6 @@ router.post("/register", validInfo, async (req, res) => {
 router.post("/login", validInfo, async (req, res) => {
   try {
     const { username, password } = req.body;
-
-
     // insert user into db
     const user = await db.query(
       "SELECT * FROM users WHERE username = $1", [username]
@@ -60,18 +65,29 @@ router.post("/login", validInfo, async (req, res) => {
 
     // check if incoming password is the same as the database password
     const isValidPassword = await bcrypt.compare(password, user.rows[0].password);
-    console.log(isValidPassword)
+
     if (!isValidPassword) {
       // 401 unauthenticated status code
       return res.status(401).json("username or password is incorrect");
     }
 
-    // generate jwt token
-    const token = jwtGenerator(user.rows[0].username);
 
-    res.json(
-      { token }
-    )
+    // generate jwt token
+    const accessToken = jwtAccessGenerator(username);
+    const refreshToken = jwtRefreshGenerator(username);
+
+    // insert refresh token into db
+    const ipAddress = req.ip;
+    const message = await db.query(
+      "SELECT login($1, $2, $3)", [username, refreshToken, ipAddress]
+    );
+    if (message.rows[0].login !== "success") {
+      return res.status(500).send("Server error")
+    }
+    res.cookie("access-token", accessToken, { httpOnly: true })
+    res.cookie("refresh-token", refreshToken, { httpOnly: true })
+    res.set("username", username);  
+    res.json(null)
 
   } catch (err) {
     console.error(err.message);
@@ -79,16 +95,42 @@ router.post("/login", validInfo, async (req, res) => {
   }
 });
 
-router.get("/is-verify", authorize, async (req, res) => {
+router.delete("/logout", authorize, async (req, res) => {
   try {
-    console.log(req.user)
-    res.json({
-      isAuthenticated: true,
-      username: req.user
-    })
+    console.log("logout username:", req.user)
+    if (!req.user) {
+      return res.status(401).send("Not Authenticated")
+    }
+    // update db to change refresh token of user to null
+    const refreshToken = req.cookies["refresh-token"];
+    const message = await db.query(
+      "SELECT logout($1)", [refreshToken]
+    );
+    if (message.rows[0].logout !== "success") {
+      return res.status(500).send("Server error")
+    }
+    res.cookie("access-token", null, { httpOnly: true, maxAge: 0 })
+    res.cookie("refresh-token", null, { httpOnly: true, maxAge: 0 })
+    res.json(null)
   } catch (err) {
     console.error(err.message);
-    res.status(401).send("Server error")
+    res.status(401).send("Not Authenticated")
+  }
+})
+
+router.get("/is-verify", authorize, async (req, res) => {
+  try {
+    console.log("is-verify username:", req.user)
+    if (!req.user) {
+      return res.status(401).send("Not Authenticated")
+    }
+    res.set("username", req.user);
+    return (
+      res.json({ isAuthenticated: true })
+    );
+  } catch (err) {
+    console.error(err.message);
+    res.status(401).send("Not Authenticated")
   }
 });
 

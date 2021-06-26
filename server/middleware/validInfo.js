@@ -1,3 +1,6 @@
+/**
+ * Checks if username and password entered meets minimum requirement of non-empty
+ */
 module.exports = (req, res, next) => {
   const { username, password } = req.body;
 

@@ -17,27 +17,26 @@ export default function RegisterModal() {
     setInputs({ ...inputs, [e.target.name]: e.target.value })
   }
 
-  const onSubmitForm = async (e) => {
+  const onSubmitForm = (e) => {
     e.preventDefault();
-
-    try {
-      const body = { username, password };
-      const response = await AuthApi.post("/register", body);
-      console.log(response)
-      localStorage.setItem("token", response.data.token)
-      setIsAuthenticated(true)
-      setUsername(body.username)
-      toast.dark("Account created!")
-      setInputs({
-        username: "",
-        password: ""
+    const body = { username, password };
+    AuthApi
+      .post("/register", body)
+      .then(res => {
+        setIsAuthenticated(true)
+        setUsername(res.headers.username)
+        setInputs({
+          username: "",
+          password: ""
+        })
+        document.getElementById("closeRegister").click();
+        window.location.reload();
+        toast.dark("Account created!")
       })
-      document.getElementById("closeRegister").click();
-      window.location.reload();
-    } catch (err) {
-      console.error(err.response.data)
-      toast.error(err.response.data)
-    }
+      .catch(err => {
+        console.error(err.response.data)
+        toast.error(err.response.data)
+      });
   }
 
 

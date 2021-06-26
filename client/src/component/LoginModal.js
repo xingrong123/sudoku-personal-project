@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import AuthApi from '../apis/AuthApi';
 import { AppContext } from '../context/AppContext';
 
-export default function LoginModal(props) {
+export default function LoginModal() {
   const [inputs, setInputs] = useState({
     username: "",
     password: ""
@@ -17,26 +17,28 @@ export default function LoginModal(props) {
     setInputs({ ...inputs, [e.target.name]: e.target.value })
   }
 
-  const onSubmitForm = async (e) => {
+  const onSubmitForm = (e) => {
     e.preventDefault();
+    const body = { username, password };
 
-    try {
-      const body = { username, password };
-      const response = await AuthApi.post("/login", body);
-      localStorage.setItem("token", response.data.token)
-      setIsAuthenticated(true)
-      setUsername(body.username)
-      toast.dark("login successfully!")
-      setInputs({
-        username: "",
-        password: ""
+    AuthApi
+      .post("/login", body)
+      .then(res => {
+        setIsAuthenticated(true);
+        console.log(res)
+        setUsername(res.headers.username);
+        setInputs({
+          username: "",
+          password: ""
+        });
+        document.getElementById("closeLogin").click();
+        window.location.reload();
+        toast.dark("login successfully!");
       })
-      document.getElementById("closeLogin").click();
-      window.location.reload();
-    } catch (err) {
-      console.error(err.response.data)
-      toast.error(err.response.data)
-    }
+      .catch(err => {
+        console.error(err);
+        toast.error(err);
+      })
   }
 
 
