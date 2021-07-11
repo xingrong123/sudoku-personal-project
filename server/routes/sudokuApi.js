@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const db = require("../db");
 const authorize = require("../middleware/authorize");
+const checkUser = require("../middleware/checkUser");
 
 router.get("/puzzlescount", authorize, async (req, res) => {
   try {
@@ -49,11 +50,8 @@ router.get("/puzzle/:id", async (req, res) => {
   }
 })
 
-router.post("/save", authorize, async (req, res) => {
+router.post("/save", authorize, checkUser, async (req, res) => {
   try {
-    if (!req.user) {
-      res.status(401).send("Not Authenticated")
-    }
     const username = req.user;
 
     const { puzzle_id, moves, squares, history, time_spent } = req.body;
@@ -62,7 +60,7 @@ router.post("/save", authorize, async (req, res) => {
     await db.query(
       "INSERT INTO puzzle_progress(username, puzzle_id, moves, squares, history, time_spent) " +
       "VALUES ($1, $2, $3, $4, $5, $6) " +
-      "ON CONFLICT (username, puzzle_id) DO UPDATE SET moves = $3, squares = $4, history = $5",
+      "ON CONFLICT (username, puzzle_id) DO UPDATE SET moves = $3, squares = $4, history = $5, time_spent = $6",
       [username, puzzle_id, moves, squares, JSON.stringify(history), time_spent]
     );
     res.status(200).json("saved successfully");
@@ -72,11 +70,8 @@ router.post("/save", authorize, async (req, res) => {
   }
 })
 
-router.post("/load", authorize, async (req, res) => {
+router.post("/load", authorize, checkUser, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).send("Not Authenticated")
-    }
     const username = req.user;
 
     const { puzzle_id } = req.body;
@@ -89,11 +84,8 @@ router.post("/load", authorize, async (req, res) => {
   }
 })
 
-router.post("/win", authorize, async (req, res) => {
+router.post("/win", authorize, checkUser, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).send("Not Authenticated")
-    }
     const username = req.user;
     const { puzzle_id, time_spent } = req.body;
     await db.query(

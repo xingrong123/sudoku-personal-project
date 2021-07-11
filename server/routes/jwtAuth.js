@@ -6,6 +6,7 @@ const jwtRefreshGenerator = require('../utils/jwtRefreshGenerator')
 const validInfo = require('../middleware/validInfo');
 const authorize = require('../middleware/authorize');
 const { request } = require("express");
+const checkUser = require("../middleware/checkUser");
 // registering
 
 router.post("/register", validInfo, async (req, res) => {
@@ -95,12 +96,9 @@ router.post("/login", validInfo, async (req, res) => {
   }
 });
 
-router.delete("/logout", authorize, async (req, res) => {
+router.delete("/logout", authorize, checkUser, async (req, res) => {
   try {
     console.log("logout username:", req.user)
-    if (!req.user) {
-      return res.status(401).send("Not Authenticated")
-    }
     // update db to change refresh token of user to null
     const refreshToken = req.cookies["refresh-token"];
     const message = await db.query(
@@ -109,21 +107,18 @@ router.delete("/logout", authorize, async (req, res) => {
     if (message.rows[0].logout !== "success") {
       return res.status(500).send("Server error")
     }
-    res.cookie("access-token", null, { httpOnly: true, maxAge: 0 })
-    res.cookie("refresh-token", null, { httpOnly: true, maxAge: 0 })
-    res.json(null)
+    res.cookie("access-token", "", { httpOnly: true, maxAge: 0 })
+    res.cookie("refresh-token", "", { httpOnly: true, maxAge: 0 })
+    return res.json(null)
   } catch (err) {
     console.error(err.message);
     res.status(401).send("Not Authenticated")
   }
 })
 
-router.get("/is-verify", authorize, async (req, res) => {
+router.get("/is-verify", authorize, checkUser, async (req, res) => {
   try {
     console.log("is-verify username:", req.user)
-    if (!req.user) {
-      return res.status(401).send("Not Authenticated")
-    }
     res.set("username", req.user);
     return (
       res.json({ isAuthenticated: true })

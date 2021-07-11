@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
   try {
     const refreshToken = req.cookies["refresh-token"];
     const accessToken = req.cookies["access-token"];
-    if (!refreshToken) {
+    if (!refreshToken || refreshToken === "") {
       // No token found, user is logged out
       return next();
     }
@@ -32,7 +32,7 @@ module.exports = async (req, res, next) => {
 
     next();
   } catch (err) {
-    console.error(err.message);
-    return res.status(403).json("Not Authorized")
+    // invalid refresh token, no user is logged in
+    return next();
   }
 }
