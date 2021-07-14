@@ -8,6 +8,7 @@ import "./Game.css";
 import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 import { Timer } from './Timer';
 import { checkWin, getTimeString, getTimeJson } from '../../logic/Sudoku';
+import { StarRating } from './StarRating';
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -44,7 +45,7 @@ export default class Game extends React.Component {
         hours: 0,
         minutes: 0,
         seconds: 0
-      }
+      },
     };
 
     this.setTime = this.setTime.bind(this)
@@ -95,7 +96,7 @@ export default class Game extends React.Component {
     SudokuPuzzleFinder
       .post("/win", body)
       .then(res => toast.success(res.data))
-      .catch(err => { 
+      .catch(err => {
         console.error(err.response.data)
         toast.error(err.response.data)
       })
@@ -288,6 +289,9 @@ export default class Game extends React.Component {
                 <ol className="list-group text-start">{moveHistory.reverse()}</ol>
               </div>
             </div>
+          </div>
+          <div className="container">
+            <StarRating value={0} puzzle_id={this.props.puzzleDetails.id} />
           </div>
         </div>
       </div>

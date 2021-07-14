@@ -29,7 +29,7 @@ router.get("/puzzlescount", authorize, async (req, res) => {
         wins: results2.rows
       })
     }
-    return res.json({puzzles: results.rows});
+    return res.json({ puzzles: results.rows });
   } catch (err) {
     console.error(err)
   }
@@ -81,6 +81,7 @@ router.post("/load", authorize, checkUser, async (req, res) => {
     res.status(200).json(results.rows);
   } catch (error) {
     console.error(error)
+    res.status(401).send("Not Authenticated")
   }
 })
 

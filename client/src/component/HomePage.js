@@ -7,7 +7,7 @@ import { FilterOffCanvas } from './FilterOffCanvas';
 
 export default function HomePage() {
   const { isAuthenticated } = useContext(AppContext)
-  const [puzzlesCount, setPuzzlesCount] = useState([]);       // puzzle_id, difficulty
+  const [puzzles, setPuzzles] = useState([]);       // puzzle_id, difficulty
   const [puzzleProgress, setPuzzleProgress] = useState(null); // puzzle_id, time_spent, completed
   const initFilterState = {
     easy: true,
@@ -55,10 +55,10 @@ export default function HomePage() {
     SudokuPuzzleFinder
       .get("/puzzlescount")
       .then(res => {
-        setPuzzlesCount(res.data.puzzles);
         if (res.data.wins) {
           const wins = res.data.wins
           setPuzzleProgress(wins);
+        setPuzzles(res.data.puzzles);
         }
       })
       .catch(err => {
@@ -118,7 +118,7 @@ export default function HomePage() {
           for filtering array
           https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
            */}
-          {puzzlesCount.filter(puzzle => { return filterCheck(puzzle) }).map(
+          {puzzles.filter(puzzle => { return filterCheck(puzzle) }).map(
             index => (
               <tr className="table-light" key={index.puzzle_id}>
                 <td>{index.puzzle_id}</td>
