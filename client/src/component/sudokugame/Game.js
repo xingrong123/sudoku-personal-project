@@ -9,6 +9,7 @@ import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 import { Timer } from './Timer';
 import { checkWin, getTimeString, getTimeJson } from '../../logic/Sudoku';
 import { StarRating } from './StarRating';
+import CommentSection from './CommentSection';
 
 export default class Game extends React.Component {
   constructor(props) {
@@ -290,9 +291,8 @@ export default class Game extends React.Component {
               </div>
             </div>
           </div>
-          <div className="container">
-            <StarRating avgRating={this.props.puzzleDetails.avgRating} puzzle_id={this.props.puzzleDetails.id} />
-          </div>
+          <StarRating avgRating={this.props.puzzleDetails.avgRating} puzzle_id={this.props.puzzleDetails.id} />
+          <CommentSection comments={this.props.comments} puzzle_id={this.props.puzzleDetails.id}/>
         </div>
       </div>
     );

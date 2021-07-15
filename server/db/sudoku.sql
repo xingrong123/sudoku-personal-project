@@ -16,9 +16,7 @@ print(ans)
 -- \c sudoku_db;
 
 DROP TRIGGER IF EXISTS tr_check_number_of_row ON login_info;
-DROP FUNCTION IF EXISTS fn_get_puzzle_progress_with_time;
 DROP FUNCTION IF EXISTS fn_rate_puzzle;
-DROP FUNCTION IF EXISTS fn_get_puzzle_with_avg_rating;
 DROP FUNCTION IF EXISTS fn_insert_win;
 DROP FUNCTION IF EXISTS fn_register;
 DROP FUNCTION IF EXISTS fn_login;
@@ -29,6 +27,7 @@ DROP TABLE IF EXISTS puzzle_progress;
 DROP TABLE IF EXISTS sudoku_puzzles;
 DROP TABLE IF EXISTS login_info;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS comments;
 DROP TYPE IF EXISTS DIFFICULTY_LEVEL;
 
 CREATE TYPE DIFFICULTY_LEVEL AS ENUM (
@@ -74,7 +73,8 @@ CREATE TABLE comments (
   username VARCHAR(255) REFERENCES users(username) NOT NULL,
   puzzle_id INTEGER REFERENCES sudoku_puzzles(puzzle_id) NOT NULL,
   reply_to INTEGER REFERENCES comments(comment_id),
-  comment TEXT NOT NULL
+  comment TEXT NOT NULL,
+  date_created TIMESTAMP NOT NULL
 );
 
 INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES 
@@ -89,60 +89,6 @@ INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES
   ('{4,null,null,6,null,null,null,null,null,null,null,2,null,3,null,null,null,null,null,null,null,null,null,9,8,2,7,8,null,null,4,1,null,null,null,null,9,null,null,null,null,null,null,null,5,null,6,null,null,null,null,null,7,null,null,3,null,null,null,null,4,null,6,null,null,null,null,9,6,2,null,null,null,9,null,null,null,null,null,5,null}', 'expert'),
   ('{null,null,2,null,8,5,null,null,4,null,null,null,null,3,null,null,6,null,null,null,4,2,1,null,null,3,null,null,null,null,null,null,null,null,5,2,null,null,null,null,null,null,3,1,null,9,null,null,null,null,null,null,null,null,8,null,null,null,null,6,null,null,null,2,5,null,4,null,null,null,null,8,null,null,null,null,null,1,6,null,null}', 'expert');
 
-
--- if puzzle not in table, then user has not attempted puzzle. 
--- if completed is true, user has completed puzzle. 
--- if completed is false, user has attempted puzzle but not completed it.
-CREATE OR REPLACE FUNCTION
-fn_get_puzzle_progress_with_time(
-  username1 VARCHAR(255)
-)
-RETURNS TABLE(
-  puzzle_id INTEGER,
-  time_spent TIME WITHOUT TIME ZONE,
-  completed BOOLEAN
-) AS
-$$
-#variable_conflict use_column 
-  BEGIN 
-    RETURN QUERY 
-      SELECT puzzle_id, time_spent, false AS completed
-        FROM puzzle_progress_and_ratings
-        WHERE username=$1 AND time_spent IS NOT NULL AND time_spent_to_complete IS NULL
-      UNION
-      SELECT puzzle_id, time_spent_to_complete AS time_spent, true AS completed
-        FROM puzzle_progress_and_ratings
-        WHERE username=$1 AND time_spent_to_complete IS NOT NULL;
-  END; $$
-LANGUAGE plpgsql;
-
-
-DROP FUNCTION IF EXISTS fn_get_puzzle_with_avg_rating;
-CREATE OR REPLACE FUNCTION
-fn_get_puzzle_with_avg_rating(
-  puzzle_id1 INTEGER
-)
-RETURNS TABLE(
-  puzzle_id INTEGER,
-  puzzle INTEGER[81],
-  difficulty DIFFICULTY_LEVEL,
-  avg_rating FLOAT
-) AS
-$$
-#variable_conflict use_column 
-  BEGIN 
-    RETURN QUERY 
-      SELECT x.puzzle_id, x.puzzle, x.difficulty, COALESCE(y.avg_rating, 0)
-        FROM ((SELECT *
-          FROM sudoku_puzzles AS k
-          WHERE k.puzzle_id=$1) AS x 
-        LEFT OUTER JOIN (SELECT j.puzzle_id, AVG(CAST(rating AS FLOAT)) AS avg_rating
-          FROM puzzle_progress_and_ratings AS j
-          WHERE j.puzzle_id=$1 
-          GROUP BY j.puzzle_id) AS y 
-          ON x.puzzle_id = y.puzzle_id);
-  END; $$
-LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION
 fn_insert_win(

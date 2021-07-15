@@ -32,7 +32,7 @@ router.get("/puzzles", authorize, async (req, res) => {
 })
 
 router.get("/puzzle/:id", async (req, res) => {
-  const query = `
+  const query1 = `
     SELECT x.puzzle_id, x.puzzle, x.difficulty, COALESCE(y.avg_rating, 0) AS avg_rating
       FROM ((SELECT *
         FROM sudoku_puzzles AS k
@@ -43,15 +43,25 @@ router.get("/puzzle/:id", async (req, res) => {
         GROUP BY j.puzzle_id) AS y 
         ON x.puzzle_id = y.puzzle_id);
   `
+  const query2 = `
+    SELECT comment_id, username, reply_to, comment, date_created
+      FROM comments
+      WHERE puzzle_id = $1
+      ORDER BY date_created DESC
+  `
   try {
     const { id } = req.params;
-    const results = await db.query(
-      query, [id]
+    const task1 = db.query(
+      query1, [id]
     );
-    if (!results.rows.length) {
+    const task2 = db.query(
+      query2, [id]
+    )
+    const [results1, results2] = await Promise.all([task1, task2]);
+    if (!results1.rows.length) {
       return res.status(404).send("page not found");
     }
-    return res.json({ puzzle: results.rows });
+    return res.json({ puzzle: results1.rows, comments: results2.rows });
   } catch (error) {
     console.error(error)
   }
@@ -112,6 +122,22 @@ router.post("/rate", authorize, checkUser, async (req, res) => {
       "SELECT fn_rate_puzzle($1, $2, $3)", [username, puzzle_id, rating]
     );
     res.status(200).json(`rate success`);
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+router.post("/comment", authorize, checkUser, async (req, res) => {
+  const query = `
+    INSERT INTO comments(username, puzzle_id, reply_to, comment, date_created) VALUES ($1, $2, $3, $4, NOW()::timestamp)
+  `;
+  try {
+    const username = req.user;
+    const { puzzle_id, reply_to, comment } = req.body;
+    await db.query(
+      query, [username, puzzle_id, reply_to, comment]
+    );
+    res.status(200).json(`comment saved`);
   } catch (error) {
     console.error(error)
   }

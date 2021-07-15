@@ -15,12 +15,14 @@ export default function Sudoku() {
     avgRating: 0
   }
   const [puzzleDetails, setPuzzleDetails] = useState(initPuzzleDetails)
+  const [comments, setComments] = useState([])
 
   useEffect(() => {
     async function fetchData() {
       try {
         const response = await SudokuPuzzleFinder.get(`/puzzle/${id}`);
         const data = response.data.puzzle[0];
+        setComments(response.data.comments)
         setPuzzleDetails({
           puzzle: data.puzzle,
           id: data.puzzle_id,
@@ -37,7 +39,7 @@ export default function Sudoku() {
   return (
     <Fragment>
       {puzzleDetails !== initPuzzleDetails && puzzleDetails.puzzle.length === 81 ?
-        <Game puzzleDetails={puzzleDetails} ref={myRef} /> :
+        <Game puzzleDetails={puzzleDetails} comments={comments} ref={myRef} /> :
         <div className="d-flex justify-content-center" style={{ height: "80vh" }}>
           <div className="my-auto">
             <div className="spinner-border" role="status" />
