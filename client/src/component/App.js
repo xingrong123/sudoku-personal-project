@@ -36,7 +36,6 @@ function AppWithContext() {
     AuthApi
       .get("/is-verify")
       .then((res) => {
-        console.log(res);
         if (res.data.isAuthenticated) {
           setIsAuthenticated(true);
           setUsername(res.headers.username);

@@ -291,7 +291,7 @@ export default class Game extends React.Component {
             </div>
           </div>
           <div className="container">
-            <StarRating value={0} puzzle_id={this.props.puzzleDetails.id} />
+            <StarRating avgRating={this.props.puzzleDetails.avgRating} puzzle_id={this.props.puzzleDetails.id} />
           </div>
         </div>
       </div>

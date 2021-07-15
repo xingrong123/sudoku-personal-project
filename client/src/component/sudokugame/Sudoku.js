@@ -11,7 +11,8 @@ export default function Sudoku() {
   const initPuzzleDetails = {
     puzzle: [],
     id: "",
-    difficulty: ""
+    difficulty: "",
+    avgRating: 0
   }
   const [puzzleDetails, setPuzzleDetails] = useState(initPuzzleDetails)
 
@@ -19,10 +20,12 @@ export default function Sudoku() {
     async function fetchData() {
       try {
         const response = await SudokuPuzzleFinder.get(`/puzzle/${id}`);
+        const data = response.data.puzzle[0];
         setPuzzleDetails({
-          puzzle: response.data.puzzle,
-          id: response.data.puzzle_id,
-          difficulty: response.data.difficulty
+          puzzle: data.puzzle,
+          id: data.puzzle_id,
+          difficulty: data.difficulty,
+          avgRating: data.avg_rating
         })
       } catch (err) {
         console.log(err);
@@ -33,7 +36,14 @@ export default function Sudoku() {
 
   return (
     <Fragment>
-      {puzzleDetails !== initPuzzleDetails ? <Game puzzleDetails={puzzleDetails} ref={myRef} /> : ""}
+      {puzzleDetails !== initPuzzleDetails && puzzleDetails.puzzle.length === 81 ?
+        <Game puzzleDetails={puzzleDetails} ref={myRef} /> :
+        <div className="d-flex justify-content-center" style={{ height: "80vh" }}>
+          <div className="my-auto">
+            <div className="spinner-border" role="status" />
+          </div>
+        </div>
+      }
     </Fragment>
   );
 }

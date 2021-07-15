@@ -53,12 +53,11 @@ export default function HomePage() {
 
   useEffect(() => {
     SudokuPuzzleFinder
-      .get("/puzzlescount")
+      .get("/puzzles")
       .then(res => {
-        if (res.data.wins) {
-          const wins = res.data.wins
-          setPuzzleProgress(wins);
         setPuzzles(res.data.puzzles);
+        if (res.data.progress) {
+          setPuzzleProgress(res.data.progress);
         }
       })
       .catch(err => {
@@ -119,17 +118,24 @@ export default function HomePage() {
           https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
            */}
           {puzzles.filter(puzzle => { return filterCheck(puzzle) }).map(
-            index => (
-              <tr className="table-light" key={index.puzzle_id}>
-                <td>{index.puzzle_id}</td>
-                <td>{difficultyStyle(index.difficulty)}</td>
-                <td><Link to={`/game/${index.puzzle_id}`}><button className='btn btn-secondary'>puzzle {index.puzzle_id}</button></Link></td>
-                {puzzleProgress !== null ? <td><span className="font-monospace">{getProgress(index.puzzle_id)}</span></td> : null}
-              </tr>
-            )
-          )}
+              index => (
+                <tr className="table-light" key={index.puzzle_id}>
+                  <td>{index.puzzle_id}</td>
+                  <td>{difficultyStyle(index.difficulty)}</td>
+                  <td><Link to={`/game/${index.puzzle_id}`}><button className='btn btn-secondary'>puzzle {index.puzzle_id}</button></Link></td>
+                  {puzzleProgress !== null ? <td><span className="font-monospace">{getProgress(index.puzzle_id)}</span></td> : null}
+                </tr>
+              )
+            )}
         </tbody>
       </table>
+      {puzzles.length !== 0 ? "" :
+        <div className="d-flex justify-content-center fill" style={{ height: "60vh" }}>
+          <div className="my-auto">
+            <div className="spinner-border" role="status" />
+          </div>
+        </div>
+      }
       <FilterOffCanvas filterVariables={filterVariables} setFilter={(j) => setFilterVariables(j)} />
     </Fragment>
   );

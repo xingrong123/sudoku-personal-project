@@ -2,14 +2,28 @@ import React, { Fragment, useContext } from 'react';
 import { toast } from "react-toastify";
 
 import { AppContext } from '../../context/AppContext';
+import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 
 
 export const StarRating = (props) => {
-  const [rating, setRating] = React.useState(parseInt(props.value) || 0);
+  const [rating, setRating] = React.useState(parseInt(props.avgRating) || 0);
   const [selection, setSelection] = React.useState(0);
   const [selected, setSelected] = React.useState(false);
   const { isAuthenticated } = useContext(AppContext)
 
+  const sendRating = (rating) => {
+    const body = {
+      puzzle_id: props.puzzle_id,
+      rating: rating
+    }
+    SudokuPuzzleFinder
+      .post("/rate", body)
+      .then((res) => {
+        console.log(res.data);
+        toast.success("rated");
+      })
+      .catch(err => { console.log(err) })
+  }
 
   const hoverOver = event => {
     let val = 0;
@@ -20,7 +34,7 @@ export const StarRating = (props) => {
 
   return (
     <Fragment>
-      <div>Rating</div>
+      <div>Ratings</div>
       <div
         onMouseOut={() => hoverOver(null)}
         onClick={e => {
@@ -29,6 +43,7 @@ export const StarRating = (props) => {
             return;
           }
           setRating(e.target.getAttribute('data-star-id') || rating);
+          sendRating(e.target.getAttribute('data-star-id'));
           setSelected(true);
         }}
         onMouseOver={isAuthenticated ? hoverOver : null}
@@ -41,7 +56,7 @@ export const StarRating = (props) => {
           />
         ))}
       </div>
-      <p>{selected === true ? "you selected " + rating.toString() : ""}</p>
+      <p>{selected === true ? "you rated " + rating.toString() : ""}</p>
     </Fragment>
   )
 }
