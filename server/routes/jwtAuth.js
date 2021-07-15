@@ -35,9 +35,9 @@ router.post("/register", validInfo, async (req, res) => {
     // insert user into db
     const ipAddress = req.ip;
     const message = await db.query(
-      "SELECT register($1, $2, $3, $4)", [username, hash, refreshToken, ipAddress]
+      "SELECT fn_register($1, $2, $3, $4)", [username, hash, refreshToken, ipAddress]
     );
-    if (message.rows[0].register !== "success") {
+    if (message.rows[0].fn_register !== "success") {
       return res.status(500).send("Server error")
     }
     res.cookie("access-token", accessToken, { httpOnly: true })
@@ -80,9 +80,9 @@ router.post("/login", validInfo, async (req, res) => {
     // insert refresh token into db
     const ipAddress = req.ip;
     const message = await db.query(
-      "SELECT login($1, $2, $3)", [username, refreshToken, ipAddress]
+      "SELECT fn_login($1, $2, $3)", [username, refreshToken, ipAddress]
     );
-    if (message.rows[0].login !== "success") {
+    if (message.rows[0].fn_login !== "success") {
       return res.status(500).send("Server error")
     }
     res.cookie("access-token", accessToken, { httpOnly: true })
@@ -102,9 +102,9 @@ router.delete("/logout", authorize, checkUser, async (req, res) => {
     // update db to change refresh token of user to null
     const refreshToken = req.cookies["refresh-token"];
     const message = await db.query(
-      "SELECT logout($1)", [refreshToken]
+      "SELECT fn_logout($1)", [refreshToken]
     );
-    if (message.rows[0].logout !== "success") {
+    if (message.rows[0].fn_logout !== "success") {
       return res.status(500).send("Server error")
     }
     res.cookie("access-token", "", { httpOnly: true, maxAge: 0 })

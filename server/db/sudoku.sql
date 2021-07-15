@@ -16,15 +16,18 @@ print(ans)
 -- \c sudoku_db;
 
 DROP TRIGGER IF EXISTS tr_check_number_of_row ON login_info;
-DROP FUNCTION IF EXISTS register;
-DROP FUNCTION IF EXISTS login;
-DROP FUNCTION IF EXISTS logout;
-DROP FUNCTION IF EXISTS checkRefreshToken;
+DROP FUNCTION IF EXISTS fn_rate_puzzle;
+DROP FUNCTION IF EXISTS fn_insert_win;
+DROP FUNCTION IF EXISTS fn_register;
+DROP FUNCTION IF EXISTS fn_login;
+DROP FUNCTION IF EXISTS fn_logout;
+DROP FUNCTION IF EXISTS fn_check_refresh_token;
 DROP TABLE IF EXISTS puzzle_win;
 DROP TABLE IF EXISTS puzzle_progress;
 DROP TABLE IF EXISTS sudoku_puzzles;
 DROP TABLE IF EXISTS login_info;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS comments;
 DROP TYPE IF EXISTS DIFFICULTY_LEVEL;
 
 CREATE TYPE DIFFICULTY_LEVEL AS ENUM (
@@ -46,28 +49,32 @@ CREATE TABLE users (
 );
 
 CREATE TABLE login_info (
-  username VARCHAR(255) REFERENCES users(username),
+  username VARCHAR(255) REFERENCES users(username) NOT NULL,
   refresh_token VARCHAR(255) PRIMARY KEY,
   login_time TIMESTAMP NOT NULL,
   logged_in BOOLEAN NOT NULL,
   ip_address INET NOT NULL
 );
 
-CREATE TABLE puzzle_progress (
+CREATE TABLE puzzle_progress_and_ratings (
   username VARCHAR(255) REFERENCES users(username),
   puzzle_id INTEGER REFERENCES sudoku_puzzles(puzzle_id),
-  moves INTEGER NOT NULL,
-  squares INTEGER[81] NOT NULL,
-  history JSON NOT NULL,
-  time_spent TIME WITHOUT TIME ZONE NOT NULL,
+  moves INTEGER,
+  squares INTEGER[81],
+  history JSON,
+  time_spent TIME WITHOUT TIME ZONE,
+  time_spent_to_complete TIME WITHOUT TIME ZONE,
+  rating INTEGER CHECK (rating > 0 AND rating < 6),
   PRIMARY KEY(username, puzzle_id)
 );
 
-CREATE TABLE puzzle_win (
-  username VARCHAR(255) REFERENCES users(username),
-  puzzle_id INTEGER REFERENCES sudoku_puzzles(puzzle_id),
-  time_spent TIME WITHOUT TIME ZONE NOT NULL,
-  PRIMARY KEY (username, puzzle_id)
+CREATE TABLE comments (
+  comment_id SERIAL PRIMARY KEY,
+  username VARCHAR(255) REFERENCES users(username) NOT NULL,
+  puzzle_id INTEGER REFERENCES sudoku_puzzles(puzzle_id) NOT NULL,
+  reply_to INTEGER REFERENCES comments(comment_id),
+  comment TEXT NOT NULL,
+  date_created TIMESTAMP NOT NULL
 );
 
 INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES 
@@ -83,11 +90,46 @@ INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES
   ('{null,null,2,null,8,5,null,null,4,null,null,null,null,3,null,null,6,null,null,null,4,2,1,null,null,3,null,null,null,null,null,null,null,null,5,2,null,null,null,null,null,null,3,1,null,9,null,null,null,null,null,null,null,null,8,null,null,null,null,6,null,null,null,2,5,null,4,null,null,null,null,8,null,null,null,null,null,1,6,null,null}', 'expert');
 
 
-
-
+CREATE OR REPLACE FUNCTION
+fn_insert_win(
+  username1 VARCHAR(255),
+  puzzle_id1 INTEGER,
+  time_spent1 TIME WITHOUT TIME ZONE
+)
+RETURNS VARCHAR(30) AS
+$$ DECLARE message1 VARCHAR(30);
+  BEGIN 
+    INSERT INTO puzzle_progress_and_ratings(username, puzzle_id, time_spent_to_complete) 
+      VALUES ($1, $2, $3) 
+      ON CONFLICT (username, puzzle_id) 
+      DO UPDATE SET time_spent_to_complete=$3 
+        WHERE time_spent_to_complete>$3;
+    message1 := 'success';
+    RETURN message1;
+  END; $$
+LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION
-register(username1 VARCHAR(255),
+fn_rate_puzzle(
+  username1 VARCHAR(255),
+  puzzle_id1 INTEGER,
+  rating1 INT
+)
+RETURNS VARCHAR(30) AS
+$$ DECLARE message1 VARCHAR(30);
+  BEGIN 
+    INSERT INTO puzzle_progress_and_ratings(username, puzzle_id, rating) 
+      VALUES ($1, $2, $3) 
+      ON CONFLICT (username, puzzle_id) 
+      DO UPDATE SET rating=$3;
+    message1 := 'success';
+    RETURN message1;
+  END; $$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION
+fn_register(
+  username1 VARCHAR(255),
   hashPassword VARCHAR(255),
   refresh VARCHAR(255), 
   ipAddress INET
@@ -105,7 +147,7 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION
-login(username1 VARCHAR(255),
+fn_login(username1 VARCHAR(255),
   refresh VARCHAR(255), 
   ipAddress INET
 )
@@ -121,7 +163,7 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION
-logout(refresh VARCHAR(255))
+fn_logout(refresh VARCHAR(255))
 RETURNS VARCHAR(30) AS
 $$ DECLARE message1 VARCHAR(30);
   BEGIN 
@@ -133,7 +175,7 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION
-check_refresh_token(
+fn_check_refresh_token(
   username1 VARCHAR(255), 
   refresh VARCHAR(255)
 )
