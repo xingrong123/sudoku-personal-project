@@ -5,7 +5,7 @@ import SudokuPuzzleFinder from '../../apis/SudokuPuzzleFinder';
 import { AppContext } from '../../context/AppContext';
 
 export const CommentForm = (props) => {
-  const { setIsAuthenticated, setUsername } = useContext(AppContext)
+  const { isAuthenticated, setIsAuthenticated, setUsername } = useContext(AppContext)
 
   const [inputs, setInputs] = useState({
     comment: ""
@@ -14,6 +14,7 @@ export const CommentForm = (props) => {
   const { comment } = inputs;
 
   const onChange = (e) => {
+    if (!isAuthenticated) return
     setInputs({ ...inputs, [e.target.name]: e.target.value })
   }
 
@@ -45,15 +46,17 @@ export const CommentForm = (props) => {
       })
   }
 
+  const placeholderMessage = isAuthenticated ? "Join the discussion" : "Login to comment"
+
   return (
     <Fragment>
       <form onSubmit={onSubmitForm}>
         <div className="mb-3 row">
           <div className="col-sm-12">
-            <input type="text" className="form-control" name="comment" placeholder="Join the discussion" onChange={e => onChange(e)} value={comment} />
+            <input type="text" className="form-control" name="comment" placeholder={placeholderMessage} onChange={e => onChange(e)} value={comment} />
           </div>
         </div>
-        <button type="submit" className="btn btn-primary m-3">Post</button>
+        <button type="submit" disabled={!isAuthenticated} className="btn btn-primary m-3">Post</button>
       </form>
     </Fragment>
   )
