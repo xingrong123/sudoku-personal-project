@@ -78,15 +78,13 @@ export const CommentBox = (props) => {
               <div className="row flex-fill">
                 <div className="col-sm-10">
                   <input type="text" className="form-control" placeholder="reply" name="comment" onChange={e => onChange(e)} value={comment} />
-            <small style={{color:"red"}} hidden={!formIsEmpty}>Reply must not be blank</small>
-
+                  <small style={{ color: "red" }} hidden={!formIsEmpty}>Reply must not be blank</small>
                 </div>
               </div>
               <div className="text-end">
                 <button type="submit" className="btn btn-primary">Post reply</button>
               </div>
             </div>
-
           </form>
         </div>
       </div>

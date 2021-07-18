@@ -10,8 +10,10 @@ export default function RegisterModal() {
     password: ""
   });
   const { setIsAuthenticated, setUsername } = useContext(AppContext)
+  const passwordValidation = /^(?=.*\d)(?=.*[a-z])(?=.*[!"#$%&'()*+,./:;<=>?@_`{}~-])(?=.*[A-Z])[0-9a-zA-Z!"#$%&'()*+,./:;<=>?@_`{}~-].{8,}$/;
 
   const { username, password } = inputs;
+  const [formIsEmpty, setFormIsEmpty] = useState(false)
 
   const onChange = (e) => {
     setInputs({ ...inputs, [e.target.name]: e.target.value })
@@ -19,6 +21,11 @@ export default function RegisterModal() {
 
   const onSubmitForm = (e) => {
     e.preventDefault();
+    if (!password.match(passwordValidation)) {
+      setFormIsEmpty(true)
+      return
+    }
+    setFormIsEmpty(false)
     const body = { username, password };
     AuthApi
       .post("/register", body)
@@ -60,6 +67,7 @@ export default function RegisterModal() {
                 <label className="col-sm-2 col-form-label" >Password</label>
                 <div className="col-sm-10">
                   <input type="password" className="form-control" name="password" id="inputPassword" autoComplete="on" onChange={e => onChange(e)} value={password} />
+                  <small style={{ color: "red" }} hidden={!formIsEmpty}>Password needs to have at least 8 characters and contains at least one numeric digit, one uppercase and one lowercase letter, and one special character</small>
                 </div>
               </div>
             </div>
@@ -68,7 +76,6 @@ export default function RegisterModal() {
               <button type="submit" className="btn btn-primary">Register</button>
             </div>
           </form>
-
         </div>
       </div>
     </div>
