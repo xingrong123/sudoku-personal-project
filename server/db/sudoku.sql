@@ -16,18 +16,17 @@ print(ans)
 -- \c sudoku_db;
 
 DROP TRIGGER IF EXISTS tr_check_number_of_row ON login_info;
+DROP FUNCTION IF EXISTS fn_check_refresh_token;
+DROP FUNCTION IF EXISTS fn_logout;
+DROP FUNCTION IF EXISTS fn_login;
+DROP FUNCTION IF EXISTS fn_register;
 DROP FUNCTION IF EXISTS fn_rate_puzzle;
 DROP FUNCTION IF EXISTS fn_insert_win;
-DROP FUNCTION IF EXISTS fn_register;
-DROP FUNCTION IF EXISTS fn_login;
-DROP FUNCTION IF EXISTS fn_logout;
-DROP FUNCTION IF EXISTS fn_check_refresh_token;
-DROP TABLE IF EXISTS puzzle_win;
-DROP TABLE IF EXISTS puzzle_progress;
-DROP TABLE IF EXISTS sudoku_puzzles;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS puzzle_progress_and_ratings;
 DROP TABLE IF EXISTS login_info;
 DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS sudoku_puzzles;
 DROP TYPE IF EXISTS DIFFICULTY_LEVEL;
 
 CREATE TYPE DIFFICULTY_LEVEL AS ENUM (

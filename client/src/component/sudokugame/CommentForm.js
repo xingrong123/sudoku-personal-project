@@ -11,6 +11,8 @@ export const CommentForm = (props) => {
     comment: ""
   });
 
+  const [formIsEmpty, setFormIsEmpty] = useState(false)
+
   const { comment } = inputs;
 
   const onChange = (e) => {
@@ -20,6 +22,11 @@ export const CommentForm = (props) => {
 
   const onSubmitForm = (e) => {
     e.preventDefault();
+    if (comment === "") {
+      setFormIsEmpty(true)
+      return
+    }
+    setFormIsEmpty(false)
     const body = {
       puzzle_id: props.puzzle_id,
       reply_to: null,
@@ -54,6 +61,7 @@ export const CommentForm = (props) => {
         <div className="mb-3 row">
           <div className="col-sm-12">
             <input type="text" className="form-control" name="comment" placeholder={placeholderMessage} onChange={e => onChange(e)} value={comment} />
+            <small style={{color:"red"}} hidden={!formIsEmpty}>Comment must not be blank</small>
           </div>
         </div>
         <button type="submit" disabled={!isAuthenticated} className="btn btn-primary m-3">Post</button>

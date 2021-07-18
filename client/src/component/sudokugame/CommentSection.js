@@ -82,7 +82,7 @@ export default class CommentSection extends React.Component {
         output = output.concat(this.buildOtherLayerComment(commentTree[i], null));
       }
     }
-    return output.reverse();
+    return output;
   }
 
   render() {
