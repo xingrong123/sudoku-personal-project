@@ -102,7 +102,7 @@ $$ DECLARE message1 VARCHAR(30);
       VALUES ($1, $2, $3) 
       ON CONFLICT (username, puzzle_id) 
       DO UPDATE SET time_spent_to_complete=$3 
-        WHERE time_spent_to_complete>$3;
+        WHERE puzzle_progress_and_ratings.time_spent_to_complete>$3 OR puzzle_progress_and_ratings.time_spent_to_complete IS NULL;
     message1 := 'success';
     RETURN message1;
   END; $$

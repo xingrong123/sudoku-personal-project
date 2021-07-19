@@ -1,4 +1,7 @@
 export function checkWin(squares) {
+  if (squares.includes(null)) {
+    return false;
+  }
   var check = [];
   for (let i = 0; i < 9; i++) {
     check.push(squares.slice(i * 9, i * 9 + 9));

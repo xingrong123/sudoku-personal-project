@@ -47,6 +47,7 @@ export default class Game extends React.Component {
         minutes: 0,
         seconds: 0
       },
+      hasWon: false,
     };
 
     this.setTime = this.setTime.bind(this)
@@ -98,8 +99,8 @@ export default class Game extends React.Component {
       .post("/win", body)
       .then(res => toast.success(res.data))
       .catch(err => {
-        console.error(err.response.data)
-        toast.error(err.response.data)
+        console.error(err.message)
+        toast.error(err.message)
       })
   }
 
@@ -109,20 +110,22 @@ export default class Game extends React.Component {
     if (this.state.selectedSquare === null || squares[this.state.selectedSquare] === move) {
       return;
     }
+    var stateObj = { squares: [], move: 0, history: [], win: false, hasWon: this.state.hasWon };
     squares[this.state.selectedSquare] = move;
-    var history = this.state.history.slice(0, this.state.move + 1);
-    this.setState({ squares: squares, history: history.concat(moveDetails), move: this.state.move + 1 });
-    if (!squares.includes(null)) {
-      const isWin = checkWin(squares);
-      if (isWin) {
-        if (this.state.win === false) {
-          this.saveWinDetails();
-          this.setState({ win: true });
-        }
-      } else {
-        this.setState({ win: false });
-      }
+    stateObj.squares = squares;
+    stateObj.history = this.state.history.slice(0, this.state.move + 1).concat(moveDetails);
+    stateObj.move = this.state.move + 1;
+    const isWin = checkWin(squares);
+    if (isWin && !this.state.hasWon) {
+      this.saveWinDetails();
+      stateObj.win = true;
+      stateObj.hasWon = true;
+    } else if (isWin) {
+      stateObj.win = true;
+    } else if (!isWin) {
+      stateObj.win = false;
     }
+    this.setState(stateObj);
   }
 
   handleKeyPress(num) {
@@ -139,10 +142,9 @@ export default class Game extends React.Component {
     const moveDetails = history[move]
     var squares = this.state.squares.slice()
     squares[moveDetails.square] = moveDetails.previousState;
-    this.setState({ squares: squares, move: move - 1, win: false });
-    if (!squares.includes(null)) {
-      this.checkWin(squares);
-    }
+    const win = checkWin(squares);
+    this.setState({ squares: squares, move: move - 1, win: win });
+
   }
 
   redo() {
@@ -151,10 +153,8 @@ export default class Game extends React.Component {
     const moveDetails = history[move];
     var squares = this.state.squares.slice()
     squares[moveDetails.square] = moveDetails.move;
-    this.setState({ squares: squares, move: move, win: false })
-    if (!squares.includes(null)) {
-      this.checkWin(squares);
-    }
+    const win = checkWin(squares);
+    this.setState({ squares: squares, move: move, win: win })
   }
 
   save() {
@@ -169,8 +169,8 @@ export default class Game extends React.Component {
       .post("/save", body)
       .then(res => toast.success(res.data))
       .catch(err => {
-        console.error(err.response.data)
-        toast.error(err.response.data)
+        console.error(err.message)
+        toast.error(err.message)
       })
   }
 
@@ -182,17 +182,24 @@ export default class Game extends React.Component {
     SudokuPuzzleFinder
       .post("/load", body)
       .then(res => {
-        const squares = res.data[0].squares;
-        const moves = res.data[0].moves;
-        const history = res.data[0].history;
-        const startTime = getTimeJson(res.data[0].time_spent);
-        this.setState({ history: history, squares: squares, move: moves, startTime: startTime })
+        if (res.data.length === 0) {
+          throw Error("No saved data")
+        }
+        var stateObj = { squares: [], move: 0, history: [], startTime: {}, win: false, hasWon: false };
+        stateObj.squares = res.data[0].squares;
+        stateObj.move = res.data[0].moves;
+        stateObj.history = res.data[0].history;
+        stateObj.startTime = getTimeJson(res.data[0].time_spent);
+        if (checkWin(stateObj.squares)) {
+          stateObj.win = true;
+        }
+        this.setState(stateObj)
         console.log("load successfully")
         toast.success("load successfully")
       })
       .catch(err => {
-        console.error(err.response.data)
-        toast.error(err.response.data)
+        console.error(err.message)
+        toast.error(err.message)
       })
   }
 
@@ -292,7 +299,7 @@ export default class Game extends React.Component {
             </div>
           </div>
           <StarRating avgRating={this.props.puzzleDetails.avgRating} puzzle_id={this.props.puzzleDetails.id} />
-          <CommentSection comments={this.props.comments} puzzle_id={this.props.puzzleDetails.id}/>
+          <CommentSection comments={this.props.comments} puzzle_id={this.props.puzzleDetails.id} />
         </div>
       </div>
     );
